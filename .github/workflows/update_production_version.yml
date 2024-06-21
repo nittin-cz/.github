@@ -28,6 +28,35 @@ jobs:
         # Extracting the pull request body
         pr_body="${{ github.event.pull_request.body }}"
 
+        echo "${{ env.pr_body }}"
+
+         # Extracting the Type of Change section
+          type_of_change=$(echo "$pr_body" | sed -n '/### Type of Change/,/###/p' | sed '1d;$d')
+          
+          # Check which type of change is selected
+          major=$(echo "$type_of_change" | grep '\[x\]' | grep -c 'Major')
+          minor=$(echo "$type_of_change" | grep '\[x\]' | grep -c 'Minor')
+          patch=$(echo "$type_of_change" | grep '\[x\]' | grep -c 'Patch')
+          no_version_change=$(echo "$type_of_change" | grep '\[x\]' | grep -c 'No Version Change')
+          
+          # Export the selected type as an output
+          if [ "$major" -eq 1 ]; then
+            echo "::set-output name=change_type::Major"
+          elif [ "$minor" -eq 1 ]; then
+            echo "::set-output name=change_type::Minor"
+          elif [ "$patch" -eq 1 ]; then
+            echo "::set-output name=change_type::Patch"
+          elif [ "$no_version_change" -eq 1 ]; then
+            echo "::set-output name=change_type::No Version Change"
+          else
+            echo "::set-output name=change_type::Unknown"
+          fi
+
+    - name: Use extracted values
+      run: |
+        echo "Type of Change: ${{ steps.extract-pr-template.outputs.change_type }}"
+
+
     # - name: Extract PR body
     #   id: extract-body
     #   run: |
