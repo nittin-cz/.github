@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract PR body
+      - name: Extract Pull Request body
         id: extract_pr_body
         run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
 
@@ -133,9 +133,7 @@ jobs:
         run: |
           echo "we should be here ${{ needs.Update_package_json.outputs.version }}"
     
-      # - name: Create a GitHub release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     tag: "${{ needs.Update_package_json.outputs.version }}"
-      #     name: Release ${{ needs.Update_package_json.outputs.version }}
-      #     body: "Changelog: ${{ steps.version.outputs.version }}"
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ needs.Update_package_json.outputs.version }}"
