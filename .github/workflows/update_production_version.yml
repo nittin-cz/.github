@@ -10,78 +10,96 @@ on:
     #       type: string
     #       required: true
 
-env:
-  change_type:
-  increment:
-
 jobs:
-  Extract:
+  Extract_change_type:
     runs-on: ubuntu-latest
-
+    outputs:
+      version_type: ${{ env.change_type }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Extract PR body
-      id: extract_pr_body
-      run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
+      - name: Extract PR body
+        id: extract_pr_body
+        run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
 
-    - name: Print PR body
-      run: |
-        cat pr_body.txt
+      - name: Print PR body
+        run: cat pr_body.txt
 
-    - name: Extract Change Type
-      id: extracted_change_type 
-      run: |
-        CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
-        echo "change_type=$CHANGE_TYPE" >> $GITHUB_ENV
+      - name: Extract Change Type
+        id: asd
+        run: |
+          CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
+          echo "change_type=${CHANGE_TYPE:-Patch}" > change_type.txt
 
-    - name: Output change type
-      run: |
-        echo "Selected change type is: ${{ env.change_type }}"
+      - name: Upload Change Type Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: change_type
+          path: change_type.txt
 
-    - name: Determine Increment Type
-      id: determine_increment
-      run: |
-        case "${{ env.change_type }}" in
-          Major)
-            echo "increment=major" >> $GITHUB_ENV
-            ;;
-          Minor)
-            echo "increment=minor" >> $GITHUB_ENV
-            ;;
-          Patch)
-            echo "increment=patch" >> $GITHUB_ENV
-            ;;
-          *)
-            echo "increment=patch" >> $GITHUB_ENV
-            ;;
-        esac
+  Update_production_version:
+    needs: Extract_change_type
+    if: ${{ needs.Extract_change_type.outputs.version_type != 'No Version Change' }}
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Get next version
-      uses: reecetech/version-increment@2024.4.3
-      id: version
-      with:
-        scheme: semver
-        increment: ${{ env.increment }}
+      - name: Download Change Type Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: change_type
+          path: .
 
-    - name: echo
-      run: |
-        echo "${{ steps.version.outputs.version }}"
+      - name: Read Change Type
+        id: read_change_type
+        run: |
+          CHANGE_TYPE=$(cat change_type.txt)
+          echo "change_type=${CHANGE_TYPE}" >> $GITHUB_ENV
 
-  # update_production_version:
-  #   needs: Extract
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+      - name: Determine Increment Type
+        id: determine_increment
+        run: |
+          case "${{ env.change_type }}" in
+            Major)
+              echo "increment=major" >> $GITHUB_ENV
+              ;;
+            Minor)
+              echo "increment=minor" >> $GITHUB_ENV
+              ;;
+            Patch)
+              echo "increment=patch" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "increment=patch" >> $GITHUB_ENV
+              ;;
+          esac
 
+      - name: Get next version
+        uses: reecetech/version-increment@2024.4.3
+        id: version
+        with:
+          scheme: semver
+          increment: ${{ env.increment }}
 
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ steps.version.outputs.version }}"
+          name: Release ${{ steps.version.outputs.version }}
+          body: "Changelog: ${{ steps.version.outputs.version }}"
 
+  use_version:
+    needs: Update_production_version
+    runs-on: ubuntu-latest
+    if: needs.update_production_version.outputs.version != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # - name: Create a GitHub release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     tag: "${{ steps.version.outputs.version }}"
-      #     name: Release ${{ steps.tag_version.outputs.new_tag }}
-      #     body: ${{ steps.tag_version.outputs.changelog }}
+      - name: Use version output
+        run: |
+          echo "The version from the previous job is: ${{ needs.update_production_version.outputs.version }}"
