@@ -11,7 +11,8 @@ on:
     #       required: true
 
 env:
-  VERSION:
+  VERSION_CHANGE:
+  PR_BODY:
 
 jobs:
   extract_pr_body:
