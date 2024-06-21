@@ -22,6 +22,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Extract pull request template values
+      id: extract-pr-template
+      run: |
+        # Extracting the pull request body
+        pr_body="${{ github.event.pull_request.body }}"
+
     # - name: Extract PR body
     #   id: extract-body
     #   run: |
