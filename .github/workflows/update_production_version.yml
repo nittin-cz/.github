@@ -38,7 +38,7 @@ jobs:
           name: change_type
           path: change_type.txt
 
-  Update_production_version:
+  Get_new_production_version:
     needs: Extract_change_type
     if: ${{ needs.Extract_change_type.outputs.version_type != 'No Version Change' }}
     runs-on: ubuntu-latest
@@ -85,21 +85,55 @@ jobs:
           scheme: semver
           increment: ${{ env.increment }}
 
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: "${{ steps.version.outputs.version }}"
-          name: Release ${{ steps.version.outputs.version }}
-          body: "Changelog: ${{ steps.version.outputs.version }}"
-
-  use_version:
-    needs: Update_production_version
+  Update_package_json:
+    needs: Get_new_production_version
     runs-on: ubuntu-latest
-    if: needs.update_production_version.outputs.version != ''
+    if: needs.Get_new_production_version.outputs.version != ''
+    outputs:
+      version: ${{ needs.Get_new_production_version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use version output
+      - name: Extract Node.js Version from backend/package.json
+        id: extract-node-version
         run: |
-          echo "The version from the previous job is: ${{ needs.update_production_version.outputs.version }}"
+          node_version=$(jq -r '.engines.node' backend/package.json)
+          echo "NODE_VERSION=$node_version" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Update backend/package.json Version
+        run: |
+          jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\"" backend/package.json > backend/temp.json && mv backend/temp.json backend/package.json
+
+      - name: Update frontend/package.json Version
+        run: |
+          jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\"" frontend/package.json > frontend/temp.json && mv frontend/temp.json frontend/package.json
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
+          committer_name: GitHub Actions
+
+  Release:
+    needs: Update_package_json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: ECHO realse the version
+        run: |
+          echo "we should be here ${{ needs.Update_package_json.outputs.version }}"
+    
+      # - name: Create a GitHub release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     tag: "${{ needs.Update_package_json.outputs.version }}"
+      #     name: Release ${{ needs.Update_package_json.outputs.version }}
+      #     body: "Changelog: ${{ steps.version.outputs.version }}"
