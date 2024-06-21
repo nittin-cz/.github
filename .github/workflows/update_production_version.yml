@@ -31,7 +31,7 @@ jobs:
         cat pr_body.txt
 
     - name: Extract Change Type
-      id: extract_change_type
+      id: extracted_change_type 
       run: |
         CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
         echo "change_type=$CHANGE_TYPE" >> $GITHUB_ENV
