@@ -22,14 +22,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Extract PR body
-      id: extract-body
-      run: |
-        echo "PR_BODY=$(jq -r .pull_request.body < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+    # - name: Extract PR body
+    #   id: extract-body
+    #   run: |
+    #     echo "PR_BODY=$(jq -r .pull_request.body < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
 
-    - name: Display PR body
-      run: |
-        echo "The PR body is: ${{ env.PR_BODY }}"
+    # - name: Display PR body
+    #   run: |
+    #     echo "The PR body is: ${{ env.PR_BODY }}"
 
     - name: Determine version change
       id: determine-version
