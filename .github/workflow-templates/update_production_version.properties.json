@@ -3,7 +3,7 @@
     "description": "Update production version starter workflow",
     "iconName": "example-icon",
     "categories": [
-        "Deployment"
+        "Automation"
     ],
     "filePatterns": [
         ".*\\.csproj$",
