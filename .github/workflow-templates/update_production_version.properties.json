@@ -3,11 +3,11 @@
     "description": "Update production version starter workflow",
     "iconName": "example-icon",
     "categories": [
-        "Version"
+        "Deployment"
     ],
     "filePatterns": [
         ".*\\.csproj$",
         ".*package\\.json$",
-        ".*\\.sln$"
+        ".*\\.props$"
     ]
 }
