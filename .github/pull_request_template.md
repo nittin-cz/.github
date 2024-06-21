@@ -1,11 +1,9 @@
-### Pull Request Title
-<!-- Please provide a concise and informative title for your pull request. -->
+## Describe your changes
 
-### Description
-<!-- Please describe the changes you have made in this pull request. -->
 
-### Type of Change
+## Type of Change
 <!-- Please select the type of change that applies to your pull request. -->
+<!-- Note: The selected type of change will affect the semantic version of the app. -->
 - [ ] Major (breaking changes)
 - [ ] Minor (non-breaking changes, but backward compatible)
 - [ ] Patch (small bug fixes or improvements)
