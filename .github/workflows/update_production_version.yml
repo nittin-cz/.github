@@ -25,19 +25,16 @@ jobs:
     - name: Extract pull request template values
       id: extract-pr-template
       run: |
-        # Extracting the pull request body
         pr_body="${{ github.event.pull_request.body }}"
-
-        echo "${{ env.pr_body }}"
 
     # - name: Extract PR body
     #   id: extract-body
     #   run: |
     #     echo "PR_BODY=$(jq -r .pull_request.body < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
 
-    # - name: Display PR body
-    #   run: |
-    #     echo "The PR body is: ${{ env.PR_BODY }}"
+    - name: Display PR body
+      run: |
+        echo "The PR body is: ${{ env.pr_body }}"
 
     - name: Determine version change
       id: determine-version
