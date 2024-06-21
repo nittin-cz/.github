@@ -22,7 +22,7 @@ jobs:
     - name: Extract PR body
       id: extract-body
       run: |
-        echo "PR_BODY=$(jq -r .pull_request.body < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+        echo "PR_BODY=$(jq -r .pull_request.body < $GITHUB_EVENT_PATH)" | tee -a $GITHUB_ENV
 
     - name: Display PR body
       run: |
