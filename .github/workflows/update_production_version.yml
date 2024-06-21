@@ -1,0 +1,15 @@
+name: Reusable workflwo for updating production version
+
+on:
+  workflow_call:
+
+
+jobs:
+  reusable_workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run a one-line script
+        run: echo Hello from Nittin Organization
+
