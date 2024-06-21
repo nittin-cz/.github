@@ -2,14 +2,49 @@ name: Reusable workflwo for updating production version
 
 on:
   workflow_call:
+    # inputs:
+    #   application:
+    #     type: string
+    #     required: true
+    #   change:
+    #       type: string
+    #       required: true
 
 
 jobs:
+  extract_pr_body:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Extract PR body
+      id: extract-body
+      run: echo "PR_BODY=$(jq -r .pull_request.body < $GITHUB_EVENT_PATH)" >> $GITHUB_ENV
+
+    - name: Display PR body
+      run: |
+        echo "The PR body is: ${{ env.PR_BODY }}"
+
+    - name: Determine version change
+      id: determine-version
+      run: |
+        if echo "${{ env.PR_BODY }}" | grep -q "Major (breaking changes)"; then
+          echo "VERSION_CHANGE=major" >> $GITHUB_ENV
+        elif echo "${{ env.PR_BODY }}" | grep -q "Minor (non-breaking changes)"; then
+          echo "VERSION_CHANGE=minor" >> $GITHUB_ENV
+        elif echo "${{ env.PR_BODY }}" | grep -q "Patch (small bug fixes or improvements)"; then
+          echo "VERSION_CHANGE=patch" >> $GITHUB_ENV
+        else
+          echo "VERSION_CHANGE=none" >> $GITHUB_ENV
+        fi
+
+    - name: Show version change
+      run: |
+        echo "The type of version change is: ${{ env.VERSION_CHANGE }}"
+
   reusable_workflow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run a one-line script
-        run: echo Hello from Nittin Organization
-
