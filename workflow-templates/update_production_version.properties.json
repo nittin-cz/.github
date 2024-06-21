@@ -3,6 +3,6 @@
     "description": "Update production version starter workflow",
     "iconName": "example-icon",
     "categories": [
-        "utilities"
+        "Go"
     ]
 }
