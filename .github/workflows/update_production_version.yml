@@ -15,7 +15,7 @@ env:
   increment:
 
 jobs:
-  extract_change_type:
+  Extract:
     runs-on: ubuntu-latest
 
     steps:
@@ -41,7 +41,7 @@ jobs:
         echo "Selected change type is: ${{ env.change_type }}"
 
   update_production_version:
-    needs: ['extract_change_type']
+    needs: Extract
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
