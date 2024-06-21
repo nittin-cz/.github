@@ -27,10 +27,10 @@ jobs:
         run: cat pr_body.txt
 
       - name: Extract Change Type
-        id: asd
+        id: extracted_change_type
         run: |
           CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
-          echo "change_type=${CHANGE_TYPE:-Patch}" > change_type.txt
+          echo "${CHANGE_TYPE:-Patch}" > change_type.txt
 
       - name: Upload Change Type Artifact
         uses: actions/upload-artifact@v3
