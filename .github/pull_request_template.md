@@ -1,8 +1,7 @@
-## Describe your changes
+### Describe your changes
 
 
-
-## Type of Change
+### Type of Change
 <!-- Please select the type of change that applies to your pull request. -->
 <!-- Note: The selected type of change will affect the semantic version of the app. -->
 - [ ] Major (breaking changes)
