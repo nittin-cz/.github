@@ -10,7 +10,7 @@ on:
     #       type: string
     #       required: true
 
-    
+
 jobs:
   extract_pr_body:
     runs-on: ubuntu-latest
@@ -19,38 +19,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Extract pull request template values
-      id: extract-pr-template
+    - name: Extract PR body
+      id: extract_pr_body
+      run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
+
+    - name: Extract Change Type
+      id: extract_change_type
       run: |
-        pr_body="${{ github.event.pull_request.body }}"
+        type_of_change=$(grep -oP '(?<=<!-- Note: The selected type of change will affect the semantic version of the app. -->\n- \[.\] (Major|Minor|Patch|No Version Change))' pr_body.txt)
+        type_of_change=${type_of_change//\[\]/}
+        type_of_change=$(echo $type_of_change | xargs)
+        echo "TYPE_OF_CHANGE=$type_of_change" >> $GITHUB_ENV
 
-    - name: Display PR body
+    - name: Output Change Type
       run: |
-        echo "The PR body is: ${{ env.pr_body }}"
-
-    - name: Use extracted values
-      run: |
-        echo "Type of Change: ${{ steps.extract-pr-template.outputs.pr_body }}"
-
-
-    - name: Determine version change
-      id: determine-version
-      run: |
-        if echo "${{ env.PR_BODY }}" | grep -q "Major (breaking changes)"; then
-          echo "VERSION_CHANGE=major" >> $GITHUB_ENV
-        elif echo "${{ env.PR_BODY }}" | grep -q "Minor (non-breaking changes)"; then
-          echo "VERSION_CHANGE=minor" >> $GITHUB_ENV
-        elif echo "${{ env.PR_BODY }}" | grep -q "Patch (small bug fixes or improvements)"; then
-          echo "VERSION_CHANGE=patch" >> $GITHUB_ENV
-        else
-          echo "VERSION_CHANGE=none" >> $GITHUB_ENV
-        fi
-
-    - name: Show version change
-      run: |
-        echo "The type of version change is: ${{ env.VERSION_CHANGE }}"
-
-  reusable_workflow:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+         echo "The selected type of change is: ${{ env.TYPE_OF_CHANGE }}"
