@@ -10,9 +10,12 @@ on:
     #       type: string
     #       required: true
 
+env:
+  change_type:
+  increment:
 
 jobs:
-  extract_pr_body:
+  extract_change_type:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,17 +36,50 @@ jobs:
         CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
         echo "change_type=$CHANGE_TYPE" >> $GITHUB_ENV
 
-    # - name: Extract Change Type
-    #   id: extract_change_type
-    #   run: |
-    #     change_type=$(grep -oP '- \[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | head -n 1)
-    #     change_type=${change_type#'- [x] '}
-    #     echo "TYPE_OF_CHANGE=$change_type" >> $GITHUB_ENV
-
     - name: Output change type
       run: |
         echo "Selected change type is: ${{ env.change_type }}"
 
-    - name: Output extrac
-      run: |
-        echo "oupuit is: ${{ steps.extract_change_type.outputs.change_type }}"
+  update_production_version:
+    needs: ['extract_change_type']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine Increment Type
+        id: determine_increment
+        run: |
+          case "${{ env.change_type }}" in
+            Major)
+              echo "increment=major" >> $GITHUB_ENV
+              ;;
+            Minor)
+              echo "increment=minor" >> $GITHUB_ENV
+              ;;
+            Patch)
+              echo "increment=patch" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "increment=patch" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Get next version
+        uses: reecetech/version-increment@2024.4.3
+        id: version
+        with:
+          scheme: semver
+          increment: ${{ env.increment }}
+
+      - name: echo
+        run: |
+          echo "${{ steps.version.outputs.version }}"
+
+
+      # - name: Create a GitHub release
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     tag: "${{ steps.version.outputs.version }}"
+      #     name: Release ${{ steps.tag_version.outputs.new_tag }}
+      #     body: ${{ steps.tag_version.outputs.changelog }}
