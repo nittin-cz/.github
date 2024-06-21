@@ -23,12 +23,22 @@ jobs:
       id: extract_pr_body
       run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
 
+    - name: Print PR body
+      run: |
+        cat pr_body.txt
+
     - name: Extract Change Type
       id: extract_change_type
       run: |
-        change_type=$(grep -oP '- \[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | head -n 1)
-        change_type=${change_type#'- [x] '}
+        change_type=$(grep -oP '- \[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | head -n 1 | sed 's/- \[x\] //')
         echo "TYPE_OF_CHANGE=$change_type" >> $GITHUB_ENV
+
+    # - name: Extract Change Type
+    #   id: extract_change_type
+    #   run: |
+    #     change_type=$(grep -oP '- \[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | head -n 1)
+    #     change_type=${change_type#'- [x] '}
+    #     echo "TYPE_OF_CHANGE=$change_type" >> $GITHUB_ENV
 
     - name: Output Change Type
       run: |
