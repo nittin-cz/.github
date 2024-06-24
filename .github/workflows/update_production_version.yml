@@ -161,7 +161,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: test
+          base: test
+          branch: main
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
