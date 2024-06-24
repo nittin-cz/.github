@@ -131,6 +131,12 @@ jobs:
           committer_name: GitHub Actions
           tag: ${{ needs.Get_new_production_version.outputs.version }}
 
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+
           
       # - uses: everlytic/branch-merge@1.1.2
       #   with:
@@ -156,13 +162,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: test
-          branch: main
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     base: test
+      #     branch: main
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
