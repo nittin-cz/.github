@@ -39,7 +39,7 @@ jobs:
           echo "${CHANGE_TYPE:-Patch}" > change_type.txt
 
       - name: Upload Change Type Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: change_type
           path: change_type.txt
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Change Type Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: change_type
           path: .
@@ -134,6 +134,8 @@ jobs:
           message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
           committer_name: GitHub Actions
           tag: ${{ needs.Get_new_production_version.outputs.version }}
+
+      - uses: actions/checkout@main
 
       - name: Merge branch into main
         uses: devmasx/merge-branch@master
