@@ -91,6 +91,10 @@ jobs:
           scheme: semver
           increment: ${{ env.increment }}
 
+      - name: echo
+        run: |
+          echo "${{ secrets.WORKFLOW_BOT_TOKEN }}"
+
       # - name: Bump version and push tag
       #   id: tag_version
       #   uses: mathieudutour/github-tag-action@v6.2
@@ -138,6 +142,11 @@ jobs:
           committer_name: GitHub Actions
           tag: ${{ needs.Get_new_production_version.outputs.version }}
 
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ needs.Get_new_production_version.outputs.version }}"
+
           
       # - uses: everlytic/branch-merge@1.1.2
       #   with:
@@ -155,25 +164,5 @@ jobs:
       #     target_branch: main
       #     message: "MERGE: Application version change in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  Release:
-    needs: Update_package_json
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v6
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     base: test
-      #     branch: main
-
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: "${{ needs.Update_package_json.outputs.version }}"
-
 
 
