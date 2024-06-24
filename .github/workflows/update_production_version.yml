@@ -13,9 +13,8 @@ on:
         type: string
         required: true
 
-
 env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   Extract_change_type:
@@ -55,6 +54,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Find Tag
+        id: tagger
+        uses: jimschubert/query-tag-action@v1
+        with:
+          include: "v*"
+          exclude: "*-rc*"
+          commit-ish: "HEAD~"
+          # if you unshallow in a separate step, use the following option:
+          # skip-unshallow: 'true'
+      - name: Show Tag
+        id: display
+        run: |
+          echo 'Output from Find Tag: ${{steps.tagger.outputs.tag}}'
+
       - name: Download Change Type Artifact
         uses: actions/download-artifact@v3
         with:
@@ -84,35 +97,35 @@ jobs:
               echo "increment=patch" >> $GITHUB_ENV
               ;;
           esac
-      
+
       - name: echo branch name
         run: |
           echo "${{ env.BRANCH_NAME }}"
-                    
+
       - name: Get next version
         uses: reecetech/version-increment@2024.4.3
         id: version
         with:
           scheme: semver
           increment: ${{ env.increment }}
-          release_branch: ${{ env.BRANCH_NAME }} 
-      
+          release_branch: ${{ env.BRANCH_NAME }}
+
       - name: echo this shit
         run: |
           echo "${{ steps.version.outputs.version }}"
           echo "${{ steps.version.outputs.v-version }}"
           echo "${{ steps.version.outputs.current-version }}"
-          
+
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
-          github_token: ${{ secrets.NITTIN_CI_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: ${{ env.increment }}
 
       - name: ECho bump
         run: |
-            echo "${{ steps.tag_version.outputs.new_tag }}"
+          echo "${{ steps.tag_version.outputs.new_tag }}"
 
   Update_package_json:
     needs: Get_new_production_version
@@ -165,7 +178,7 @@ jobs:
       - name: ECHO realse the version
         run: |
           echo "we should be here ${{ needs.Update_package_json.outputs.version }}"
-    
+
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
