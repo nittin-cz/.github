@@ -53,8 +53,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Download Change Type Artifact
         uses: actions/download-artifact@v3
@@ -149,10 +147,13 @@ jobs:
     needs: Update_package_json
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{ needs.Get_new_production_version.outputs.version }}"
+          tag: "${{ needs.Update_package_json.outputs.version }}"
 
 
 
