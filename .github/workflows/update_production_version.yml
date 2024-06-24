@@ -88,25 +88,29 @@ jobs:
       - name: echo branch name
         run: |
           echo "${{ env.BRANCH_NAME }}"
-
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.NITTIN_CI_TOKEN }}
-
-      - name: ECho bump
-        run: |
-          echo "${{ steps.tag_version.outputs.new_tag }}"
-
-
+                    
       - name: Get next version
         uses: reecetech/version-increment@2024.4.3
         id: version
         with:
           scheme: semver
           increment: ${{ env.increment }}
-          release_branch: ${{ env.BRANCH_NAME }}  
+          release_branch: ${{ env.BRANCH_NAME }} 
+      
+      - name: echo this shit
+        run: |
+          echo "${{ steps.version.outputs }}"
+          
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.NITTIN_CI_TOKEN }}
+          default_bump: ${{ env.increment }}
+
+      - name: ECho bump
+        run: |
+            echo "${{ steps.tag_version.outputs.new_tag }}"
 
   Update_package_json:
     needs: Get_new_production_version
