@@ -54,7 +54,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: main
 
       - name: Download Change Type Artifact
         uses: actions/download-artifact@v3
@@ -113,6 +113,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head_ref }}
 
       - name: Update backend/package.json Version
         if: inputs.be_folder != ''
@@ -124,11 +126,24 @@ jobs:
         run: |
           jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\""  ${{ inputs.fe_folder }}/package.json > ${{ inputs.fe_folder }}/temp.json && mv ${{ inputs.fe_folder }}/temp.json ${{ inputs.fe_folder }}/package.json
 
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+      - name: Merge branch into main
+        uses: devmasx/merge-branch@master
         with:
+          type: now
+          target_branch: main
           message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
-          committer_name: GitHub Actions
-          tag: ${{ needs.Get_new_production_version.outputs.version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ needs.Get_new_production_version.outputs.version }}"
+
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v9
+      #   with:
+      #     message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
+      #     committer_name: GitHub Actions
+      #     tag: ${{ needs.Get_new_production_version.outputs.version }}
 
 
