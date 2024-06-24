@@ -105,6 +105,10 @@ jobs:
     needs: Get_new_production_version
     runs-on: ubuntu-latest
     if: needs.Get_new_production_version.outputs.version != '' && (inputs.be_folder != '' || inputs.fe_folder != '')
+    permissions:
+      contents: 'write'
+      packages: 'write'
+      actions: 'read'
     outputs:
       version: ${{ needs.Get_new_production_version.outputs.version }}
     steps:
