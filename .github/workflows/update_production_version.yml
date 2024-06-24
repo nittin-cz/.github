@@ -12,9 +12,10 @@ on:
     #   application:
     #     type: string
     #     required: true
-    #   change:
-    #       type: string
-    #       required: true
+
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
 
 jobs:
   Extract_change_type:
@@ -90,6 +91,7 @@ jobs:
         with:
           scheme: semver
           increment: ${{ env.increment }}
+          release_branch: ${{ env.BRANCH_NAME }}  
 
   Update_package_json:
     needs: Get_new_production_version
@@ -130,6 +132,7 @@ jobs:
         with:
           message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
           committer_name: GitHub Actions
+          tag: ${{ needs.Get_new_production_version.outputs.version }}
 
   Release:
     needs: Update_package_json
