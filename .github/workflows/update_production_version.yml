@@ -105,14 +105,9 @@ jobs:
     needs: Get_new_production_version
     runs-on: ubuntu-latest
     if: needs.Get_new_production_version.outputs.version != '' && (inputs.be_folder != '' || inputs.fe_folder != '')
-    permissions:
-      contents: 'write'
-      packages: 'write'
-      actions: 'read'
     outputs:
       version: ${{ needs.Get_new_production_version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/create-github-app-token@v1
         id: app-token
         with:
@@ -141,6 +136,7 @@ jobs:
           message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
           committer_name: GitHub Actions
           tag: ${{ needs.Get_new_production_version.outputs.version }}
+          github_token: ${{ steps.app-token.outputs.token }}
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
