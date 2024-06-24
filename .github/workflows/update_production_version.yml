@@ -137,10 +137,10 @@ jobs:
           
       - uses: everlytic/branch-merge@1.1.2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.NITTIN_CI_TOKEN }}
           source_ref: ${{ github.ref }}
           target_branch: 'main'
-          commit_message_template: '[Automated] Merged {source_ref} into target {target_branch}'
+          commit_message_template: '[Automated] Merged ${{ github.ref }} into target main branch'
 
       # - name: Merge branch into main
       #   uses: devmasx/merge-branch@master
