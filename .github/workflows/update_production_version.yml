@@ -99,7 +99,9 @@ jobs:
       
       - name: echo this shit
         run: |
-          echo "${{ steps.version.outputs }}"
+          echo "${{ steps.version.outputs.version }}"
+          echo "${{ steps.version.outputs.v-version }}"
+          echo "${{ steps.version.outputs.current-version }}"
           
       - name: Bump version and push tag
         id: tag_version
