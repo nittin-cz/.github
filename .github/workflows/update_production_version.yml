@@ -9,9 +9,9 @@ on:
       fe_folder:
         type: string
         required: false
-    #   application:
-    #     type: string
-    #     required: true
+      application_type:
+        type: string
+        required: true
 
 
 env:
