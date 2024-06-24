@@ -86,9 +86,9 @@ jobs:
               ;;
           esac
 
-      - name: echo branch name
+      - name: echo  github.event.pull_request.head.ref name
         run: |
-          echo "${{ env.BRANCH_NAME }}"
+          echo "${{ env.github.event.pull_request.head.ref }}"
 
       - name: Get next version
         uses: reecetech/version-increment@2024.4.3
@@ -96,7 +96,6 @@ jobs:
         with:
           scheme: semver
           increment: ${{ env.increment }}
-          release_branch: ${{ env.BRANCH_NAME }}
 
       - name: echo this shit
         run: |
