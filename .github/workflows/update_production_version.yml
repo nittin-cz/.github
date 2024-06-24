@@ -49,7 +49,7 @@ jobs:
     if: ${{ needs.Extract_change_type.outputs.version_type != 'No Version Change' }}
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.v-version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -134,16 +134,21 @@ jobs:
           message: "Changed application version in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
           committer_name: GitHub Actions
           tag: ${{ needs.Get_new_production_version.outputs.version }}
-
-      - uses: actions/checkout@main
-
-      - name: Merge branch into main
-        uses: devmasx/merge-branch@master
+          
+      - uses: everlytic/branch-merge@1.1.2
         with:
-          type: now
-          target_branch: main
-          message: "MERGE: Application version change in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_ref: ${{ github.ref }}
+          target_branch: 'main'
+          commit_message_template: '[Automated] Merged {source_ref} into target {target_branch}'
+
+      # - name: Merge branch into main
+      #   uses: devmasx/merge-branch@master
+      #   with:
+      #     type: now
+      #     target_branch: main
+      #     message: "MERGE: Application version change in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
 
   Release:
     needs: Update_package_json
