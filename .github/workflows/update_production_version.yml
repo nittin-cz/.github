@@ -114,7 +114,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head_ref }}
+          ref: ${{ env.BRANCH_NAME }}
 
       - name: echo the current brach
         run: |
