@@ -118,7 +118,7 @@ jobs:
 
       - name: echo the current brach
         run: |
-          echo "${{ github.head_ref }}"
+          echo "${{ github.event.pull_request.head_ref }}"
 
       - name: Update backend/package.json Version
         if: inputs.be_folder != ''
@@ -145,6 +145,10 @@ jobs:
           message: "MERGE: Application version change in package.json to ${{ needs.Get_new_production_version.outputs.version }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  Release:
+    needs: Update_package_json
+    runs-on: ubuntu-latest
+    steps:
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
