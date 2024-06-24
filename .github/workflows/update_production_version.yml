@@ -2,7 +2,13 @@ name: Reusable workflwo for updating production version
 
 on:
   workflow_call:
-    # inputs:
+    inputs:
+      be_folder:
+        type: string
+        required: false
+      fe_folder:
+        type: string
+        required: false
     #   application:
     #     type: string
     #     required: true
@@ -88,7 +94,7 @@ jobs:
   Update_package_json:
     needs: Get_new_production_version
     runs-on: ubuntu-latest
-    if: needs.Get_new_production_version.outputs.version != ''
+    if: needs.Get_new_production_version.outputs.version != '' && (inputs.be_folder != '' || inputs.fe_folder != '')
     outputs:
       version: ${{ needs.Get_new_production_version.outputs.version }}
     steps:
@@ -97,24 +103,27 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Extract Node.js Version from backend/package.json
-        id: extract-node-version
-        run: |
-          node_version=$(jq -r '.engines.node' backend/package.json)
-          echo "NODE_VERSION=$node_version" >> $GITHUB_ENV
+      # - name: Extract Node.js Version from backend/package.json
+      #   if: inputs.be_folder != ''
+      #   id: extract-node-version
+      #   run: |
+      #     node_version=$(jq -r '.engines.node' ${{ inputs.be_folder }}/package.json)
+      #     echo "NODE_VERSION=$node_version" >> $GITHUB_ENV
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
 
       - name: Update backend/package.json Version
+        if: inputs.be_folder != ''
         run: |
-          jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\"" backend/package.json > backend/temp.json && mv backend/temp.json backend/package.json
+          jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\"" ${{ inputs.be_folder }}/package.json > ${{ inputs.be_folder }}/temp.json && mv ${{ inputs.be_folder }}/temp.json ${{ inputs.be_folder }}/package.json
 
       - name: Update frontend/package.json Version
+        if: inputs.fe_folder != ''
         run: |
-          jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\"" frontend/package.json > frontend/temp.json && mv frontend/temp.json frontend/package.json
+          jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\""  ${{ inputs.fe_folder }}/package.json > ${{ inputs.fe_folder }}/temp.json && mv ${{ inputs.fe_folder }}/temp.json ${{ inputs.fe_folder }}/package.json
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
