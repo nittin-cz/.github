@@ -28,16 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.Get_prod_version.outputs.new_prod_version != ''
     steps:
-      - uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: ${{ vars.WORKFLOW_BOT_ID }}
-          private-key: ${{ secrets.workflow_bot_token }}
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.ci_token }}
 
       - name: Update be package.json version
         if: inputs.node_be_folder_path != ''
