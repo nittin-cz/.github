@@ -24,7 +24,7 @@ jobs:
   Update_version_in_code:
     needs: Get_prod_version
     runs-on: ubuntu-latest
-    if: needs.Get_prod_version.outputs.new_prod_version.value != ''
+    if: needs.Get_prod_version.outputs.new_prod_version != ''
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
@@ -51,18 +51,18 @@ jobs:
         uses: vers-one/dotnet-project-version-updater@v1.6
         with:
           file: "${{ inputs.dot_net_file_path }}"
-          version: ${{  needs.Get_prod_version.outputs.new_prod_version.value }}
+          version: ${{ needs.Get_prod_version.outputs.new_prod_version }}
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: "Changed application version in package.json to ${{  needs.Get_prod_version.outputs.new_prod_version.value }}"
+          message: "Changed application version in package.json to ${{ needs.Get_prod_version.outputs.new_prod_version }}"
           committer_name: Nittin GitHub Actions
           committer_email: actions@nittin.cz
-          tag: ${{ needs.Get_prod_version.outputs.new_prod_version.value }}
+          tag: ${{ needs.Get_prod_version.outputs.new_prod_version }}
           github_token: ${{ steps.app-token.outputs.token }}
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{  needs.Get_prod_version.outputs.new_prod_version.value }}"
+          tag: "${{ needs.Get_prod_version.outputs.new_prod_version }}"
