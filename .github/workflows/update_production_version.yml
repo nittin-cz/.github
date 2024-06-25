@@ -14,8 +14,6 @@ on:
         type: string
         required: false
     secrets:
-      workflow_bot_token:
-        required: true
       ci_token:
         required: true
 
