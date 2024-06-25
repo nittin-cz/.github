@@ -65,7 +65,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -m "Changed application version in package.json to ${{ needs.Get_prod_version.outputs.new_prod_version }}" -a
+          git commit -m "Changed application version to ${{ needs.Get_prod_version.outputs.new_prod_version }}" -a
 
       - name: Push commit to a protected branch
         uses: CasperWA/push-protected@v2
