@@ -37,13 +37,15 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Update package json
-        if: inputs.node_be_folder_path != '' || inputs.node_fe_folder_path != '' 
-        uses: ./.github/workflows/update_package_json.yml
-        with:
-          be_folder: ${{ inputs.node_be_folder_path }}
-          fe_folder: ${{ inputs.node_fe_folder_path }}
-          version: ${{ needs.Get_prod_version.outputs.new_prod_version }}
+      - name: Update be package.json version
+        if: inputs.node_be_folder_path != ''
+        run: |
+          jq ".version=\"${{ needs.Get_prod_version.outputs.new_prod_version }}\"" ${{ inputs.node_be_folder_path }}/package.json > ${{ inputs.node_be_folder_path }}/temp.json && mv ${{ inputs.node_be_folder_path }}/temp.json ${{ inputs.node_be_folder_path }}/package.json
+  
+      - name: Update fe package.json version
+        if: inputs.node_fe_folder_path != ''
+        run: |
+          jq ".version=\"${{ needs.Get_prod_version.outputs.new_prod_version }}\""  ${{ inputs.node_fe_folder_path }}/package.json > ${{ inputs.node_fe_folder_path }}/temp.json && mv ${{ inputs.node_fe_folder_path }}/temp.json ${{ inputs.node_fe_folder_path }}/package.json
 
       - name: Set MyProject.csproj version
         if: inputs.dot_net_file_path != ''
