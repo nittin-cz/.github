@@ -44,8 +44,8 @@ jobs:
     uses: ./.github/workflows/build_push_docker_image.yml
     with:
       registry: ${{ inputs.registry }}
-      with_args: ${{ inputs.registry }}
-      dockerfile_path: ${{ inputs.registry }}
+      with_args: ${{ inputs.with_args }}
+      dockerfile_path: ${{ inputs.dockerfile_path }}
     secrets:
       token: ${{ secrets.token }}
 
@@ -54,7 +54,7 @@ jobs:
     uses: ./.github/workflows/build_push_docker_image.yml
     with:
       registry: ${{ inputs.registry }}
-      with_args: ${{ inputs.registry }}
-      dockerfile_path: ${{ inputs.registry }}
+      with_args: ${{ inputs.with_args }}
+      dockerfile_path: ${{ inputs.dockerfile_path }}
     secrets:
       token: ${{ secrets.token }}
