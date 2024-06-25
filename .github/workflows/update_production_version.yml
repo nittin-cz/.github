@@ -119,6 +119,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           persist-credentials: false
+          ref: main
 
       - name: Update backend/package.json Version
         if: inputs.be_folder != ''
@@ -129,6 +130,10 @@ jobs:
         if: inputs.fe_folder != ''
         run: |
           jq ".version=\"${{ needs.Get_new_production_version.outputs.version }}\""  ${{ inputs.fe_folder }}/package.json > ${{ inputs.fe_folder }}/temp.json && mv ${{ inputs.fe_folder }}/temp.json ${{ inputs.fe_folder }}/package.json
+
+      - name: echo branch
+        run: |
+          echo "${{ env.BRANCH_NAME }}"
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
