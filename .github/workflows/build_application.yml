@@ -1,0 +1,60 @@
+name: Build docker application
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      node_be_folder_path:
+        type: string
+        required: false
+      node_fe_folder_path:
+        type: string
+        required: false
+      dot_net_file_path:
+        type: string
+        required: false
+      registry:
+        required: true
+        type: string
+      with_args:
+        required: true
+        type: boolean
+      dockerfile_path:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  Update_app_version:
+    uses: ./.github/workflows/update_production_version.yml
+    with:
+      node_be_folder_path: ${{ inputs.node_be_folder_path }}
+      node_fe_folder_path: ${{ inputs.node_fe_folder_path }}
+      dot_net_file_path: ${{ inputs.dot_net_file_path }}
+    secrets:
+      ci_token: ${{ secrets.token }}
+  Build_prod_app:
+    needs: Update_app_version
+    if: github.base_ref == github.event.repository.default_branch
+    uses: ./.github/workflows/build_push_docker_image.yml
+    with:
+      registry: ${{ inputs.registry }}
+      with_args: ${{ inputs.registry }}
+      dockerfile_path: ${{ inputs.registry }}
+    secrets:
+      token: ${{ secrets.token }}
+
+  Build_dev_app:
+    if: github.base_ref != github.event.repository.default_branch
+    uses: ./.github/workflows/build_push_docker_image.yml
+    with:
+      registry: ${{ inputs.registry }}
+      with_args: ${{ inputs.registry }}
+      dockerfile_path: ${{ inputs.registry }}
+    secrets:
+      token: ${{ secrets.token }}
