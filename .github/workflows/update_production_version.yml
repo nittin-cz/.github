@@ -118,7 +118,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
-          persist-credentials: false
 
       - name: Update backend/package.json Version
         if: inputs.be_folder != ''
