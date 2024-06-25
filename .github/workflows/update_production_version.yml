@@ -63,13 +63,13 @@ jobs:
 
       - name: echo head_ref
         run: |
-          echo "head: ${{ github.head_ref }}"
+          echo "head: ${{ github.event.repository.default_branch }}"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.steps.app-token.outputs.token }}
-          branch: ${{ github.head_ref }}
+          branch: ${{ github.event.repository.default_branch }}
           force: true
 
       # - name: Commit changes
