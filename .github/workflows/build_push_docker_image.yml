@@ -26,27 +26,27 @@ jobs:
       - name: Code checkout
         uses: actions/checkout@v4
         with:
-            token: ${{ secrets.token }}
+          token: ${{ secrets.token }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-            registry: ${{ inputs.REGISTRY }}
-            username: ${{ github.repository_owner }}
-            password: ${{ secrets.token }}
+          registry: ${{ inputs.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.token }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-            images: ${{ inputs.REGISTRY }}/${{ github.repository }}
+          images: ${{ inputs.REGISTRY }}/${{ github.repository }}
 
       - name: Build and push docker image with build arg
         if: inputs.with_args
         run: |
-            docker buildx build  --build-arg mode=${{ env.BRANCH_NAME }} --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.dockerfile_path }}
+          docker buildx build  --build-arg mode=${{ env.BRANCH_NAME }} --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.dockerfile_path }}
 
       - name: Build and push docker image wihout build args
         if: inputs.with_args == false
         run: |
-            docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.dockerfile_path }}
+          docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.dockerfile_path }}
