@@ -31,6 +31,7 @@ env:
 
 jobs:
   Update_app_version:
+    if: github.base_ref == github.event.repository.default_branch
     uses: ./.github/workflows/update_production_version.yml
     with:
       node_be_folder_path: ${{ inputs.node_be_folder_path }}
@@ -40,7 +41,6 @@ jobs:
       ci_token: ${{ secrets.token }}
   Build_prod_app:
     needs: Update_app_version
-    if: github.base_ref == github.event.repository.default_branch
     uses: ./.github/workflows/build_push_docker_image.yml
     with:
       registry: ${{ inputs.registry }}
