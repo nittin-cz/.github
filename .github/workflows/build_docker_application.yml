@@ -26,9 +26,6 @@ on:
       token:
         required: true
 
-env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-
 jobs:
   Update_app_version:
     if: github.base_ref == github.event.repository.default_branch
@@ -39,6 +36,7 @@ jobs:
       dot_net_file_path: ${{ inputs.dot_net_file_path }}
     secrets:
       ci_token: ${{ secrets.token }}
+      
   Build_prod_app:
     needs: Update_app_version
     uses: ./.github/workflows/build_push_docker_image.yml
