@@ -55,14 +55,31 @@ jobs:
           file: "${{ inputs.dot_net_file_path }}"
           version: ${{ needs.Get_prod_version.outputs.new_prod_version }}
 
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+      - name: Add and commit change
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Changed application version in package.json to ${{ needs.Get_prod_version.outputs.new_prod_version }}" -a
+
+      - name: echo head_ref
+        run: |
+          echo "head: ${{ github.head_ref }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          message: "Changed application version in package.json to ${{ needs.Get_prod_version.outputs.new_prod_version }}"
-          committer_name: Nittin GitHub Actions
-          committer_email: actions@nittin.cz
-          tag: ${{ needs.Get_prod_version.outputs.new_prod_version }}
-          github_token: ${{ steps.app-token.outputs.token }}
+          github_token: ${{ secrets.steps.app-token.outputs.token }}
+          branch: ${{ github.head_ref }}
+          force: true
+
+      # - name: Commit changes
+      #   uses: EndBug/add-and-commit@v9
+      #   with:
+      #     message: "Changed application version in package.json to ${{ needs.Get_prod_version.outputs.new_prod_version }}"
+      #     committer_name: Nittin GitHub Actions
+      #     committer_email: actions@nittin.cz
+      #     tag: ${{ needs.Get_prod_version.outputs.new_prod_version }}
+      #     github_token: ${{ steps.app-token.outputs.token }}
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
