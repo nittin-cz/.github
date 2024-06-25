@@ -6,9 +6,6 @@ on:
       registry:
         required: true
         type: string
-      tags:
-        required: true
-        type: string
       with_args:
         required: true
         type: boolean
@@ -47,9 +44,9 @@ jobs:
       - name: Build and push docker image with build arg
         if: inputs.with_args
         run: |
-            docker buildx build  --build-arg mode=${{ env.BRANCH_NAME }} --push -t ${{ inputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ inputs.tags }} ${{ inputs.dockerfile_path }}
+            docker buildx build  --build-arg mode=${{ env.BRANCH_NAME }} --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.dockerfile_path }}
 
       - name: Build and push docker image wihout build args
         if: inputs.with_args == false
         run: |
-            docker buildx build --push -t ${{ inputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ inputs.tags }} ${{ inputs.dockerfile_path }}
+            docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.dockerfile_path }}
