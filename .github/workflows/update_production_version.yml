@@ -18,13 +18,13 @@ on:
         required: true
 
 jobs:
-  Get_prod_version:
-    uses: ./.github/workflows/get_production_version.yml
+  Get_version:
+    uses: ./.github/workflows/get_version_number.yml
 
   Update_version_in_code:
-    needs: Get_prod_version
+    needs: Get_version
     runs-on: ubuntu-latest
-    if: needs.Get_prod_version.outputs.new_prod_version != ''
+    if: needs.Get_version.outputs.new_prod_version != ''
     steps:
       # - uses: actions/create-github-app-token@v1
       #   id: app-token
@@ -46,12 +46,12 @@ jobs:
       - name: Update be package.json version
         if: inputs.node_be_folder_path != ''
         run: |
-          jq ".version=\"${{ needs.Get_prod_version.outputs.new_prod_version }}\"" ${{ inputs.node_be_folder_path }}/package.json > ${{ inputs.node_be_folder_path }}/temp.json && mv ${{ inputs.node_be_folder_path }}/temp.json ${{ inputs.node_be_folder_path }}/package.json
+          jq ".version=\"${{ needs.Get_version.outputs.new_prod_version }}\"" ${{ inputs.node_be_folder_path }}/package.json > ${{ inputs.node_be_folder_path }}/temp.json && mv ${{ inputs.node_be_folder_path }}/temp.json ${{ inputs.node_be_folder_path }}/package.json
   
       - name: Update fe package.json version
         if: inputs.node_fe_folder_path != ''
         run: |
-          jq ".version=\"${{ needs.Get_prod_version.outputs.new_prod_version }}\""  ${{ inputs.node_fe_folder_path }}/package.json > ${{ inputs.node_fe_folder_path }}/temp.json && mv ${{ inputs.node_fe_folder_path }}/temp.json ${{ inputs.node_fe_folder_path }}/package.json
+          jq ".version=\"${{ needs.Get_version.outputs.new_prod_version }}\""  ${{ inputs.node_fe_folder_path }}/package.json > ${{ inputs.node_fe_folder_path }}/temp.json && mv ${{ inputs.node_fe_folder_path }}/temp.json ${{ inputs.node_fe_folder_path }}/package.json
 
       - name: Set MyProject.csproj version
         if: inputs.dot_net_file_path != ''
@@ -59,13 +59,13 @@ jobs:
         uses: vers-one/dotnet-project-version-updater@v1.6
         with:
           file: "${{ inputs.dot_net_file_path }}"
-          version: ${{ needs.Get_prod_version.outputs.new_prod_version }}
+          version: ${{ needs.Get_version.outputs.new_prod_version }}
 
       - name: Add and commit change
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -m "Changed application version to ${{ needs.Get_prod_version.outputs.new_prod_version }}" -a
+          git commit -m "Changed application version to ${{ needs.Get_version.outputs.new_prod_version }}" -a
 
       - name: Push commit to a protected branch
         uses: CasperWA/push-protected@v2
@@ -78,13 +78,13 @@ jobs:
       # - name: Commit changes
       #   uses: EndBug/add-and-commit@v9
       #   with:
-      #     message: "Changed application version in package.json to ${{ needs.Get_prod_version.outputs.new_prod_version }}"
+      #     message: "Changed application version in package.json to ${{ needs.Get_version.outputs.new_prod_version }}"
       #     committer_name: Nittin GitHub Actions
       #     committer_email: actions@nittin.cz
-      #     tag: ${{ needs.Get_prod_version.outputs.new_prod_version }}
+      #     tag: ${{ needs.Get_version.outputs.new_prod_version }}
       #     github_token: ${{ steps.app-token.outputs.token }}
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{ needs.Get_prod_version.outputs.new_prod_version }}"
+          tag: "${{ needs.Get_version.outputs.new_prod_version }}"
