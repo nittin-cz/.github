@@ -4,10 +4,7 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      node_be_folder_path:
-        type: string
-        required: false
-      node_fe_folder_path:
+      package_json_paths:
         type: string
         required: false
       dot_net_file_path:
@@ -30,8 +27,7 @@ jobs:
   Update_app_version:
     uses: ./.github/workflows/release_new_version.yml
     with:
-      node_be_folder_path: ${{ inputs.node_be_folder_path }}
-      node_fe_folder_path: ${{ inputs.node_fe_folder_path }}
+      package_json_paths: ${{ inputs.package_json_paths }}
       dot_net_file_path: ${{ inputs.dot_net_file_path }}
     secrets:
       ci_token: ${{ secrets.token }}

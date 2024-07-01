@@ -4,10 +4,7 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      node_be_folder_path:
-        type: string
-        required: false
-      node_fe_folder_path:
+      package_json_paths:
         type: string
         required: false
       dot_net_file_path:
@@ -44,18 +41,13 @@ jobs:
         with:
           token: ${{ secrets.ci_token }}
           ref: ${{ github.base_ref }}
-
-      - name: Update be package.json version
-        if: inputs.node_be_folder_path != ''
-        run: |
-          jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" ${{ inputs.node_be_folder_path }}/package.json > ${{ inputs.node_be_folder_path }}/temp.json && mv ${{ inputs.node_be_folder_path }}/temp.json ${{ inputs.node_be_folder_path }}/package.json
   
       - name: Update fe package.json versions
-        if: inputs.node_fe_folder_path != ''
+        if: inputs.package_json_paths != ''
         run: |
-          IFS=',' read -ra ADDR <<< "${{ inputs.node_fe_folder_path }}"
-          for fe_folder in "${ADDR[@]}"; do
-            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $fe_folder/package.json > $fe_folder/temp.json && mv $fe_folder/temp.json $fe_folder/package.json
+          IFS=',' read -ra ADDR <<< "${{ inputs.package_json_paths }}"
+          for folder in "${ADDR[@]}"; do
+            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
           done
 
       - name: Update .net file version
