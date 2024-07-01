@@ -55,7 +55,7 @@ jobs:
         run: |
           jq ".version=\"${{ needs.Get_version.outputs.new_version }}\""  ${{ inputs.node_fe_folder_path }}/package.json > ${{ inputs.node_fe_folder_path }}/temp.json && mv ${{ inputs.node_fe_folder_path }}/temp.json ${{ inputs.node_fe_folder_path }}/package.json
 
-      - name: Set MyProject.csproj version
+      - name: Update .net file version
         if: inputs.dot_net_file_path != ''
         id: update
         uses: vers-one/dotnet-project-version-updater@v1.6
