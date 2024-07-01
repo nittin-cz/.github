@@ -50,10 +50,13 @@ jobs:
         run: |
           jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" ${{ inputs.node_be_folder_path }}/package.json > ${{ inputs.node_be_folder_path }}/temp.json && mv ${{ inputs.node_be_folder_path }}/temp.json ${{ inputs.node_be_folder_path }}/package.json
   
-      - name: Update fe package.json version
+      - name: Update fe package.json versions
         if: inputs.node_fe_folder_path != ''
         run: |
-          jq ".version=\"${{ needs.Get_version.outputs.new_version }}\""  ${{ inputs.node_fe_folder_path }}/package.json > ${{ inputs.node_fe_folder_path }}/temp.json && mv ${{ inputs.node_fe_folder_path }}/temp.json ${{ inputs.node_fe_folder_path }}/package.json
+          IFS=',' read -ra ADDR <<< "${{ inputs.node_fe_folder_path }}"
+          for fe_folder in "${ADDR[@]}"; do
+            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $fe_folder/package.json > $fe_folder/temp.json && mv $fe_folder/temp.json $fe_folder/package.json
+          done
 
       - name: Update .net file version
         if: inputs.dot_net_file_path != ''
