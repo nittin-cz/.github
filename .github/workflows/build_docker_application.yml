@@ -28,7 +28,7 @@ on:
 
 jobs:
   Update_app_version:
-    uses: ./.github/workflows/update_production_version.yml
+    uses: ./.github/workflows/release_new_version.yml
     with:
       node_be_folder_path: ${{ inputs.node_be_folder_path }}
       node_fe_folder_path: ${{ inputs.node_fe_folder_path }}
