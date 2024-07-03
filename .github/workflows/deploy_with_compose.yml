@@ -1,0 +1,91 @@
+name: Deploy application to server
+
+on:
+  workflow_call:
+    inputs:
+      host:
+        type: string
+        required: false
+      scp_files:
+        type: string
+        required: false
+      registry:
+        required: true
+        type: string
+      compose_file_location:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+      username:
+        required: true
+      password:
+        required: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - id: repo_name
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.event.repository.name }}
+
+      - id: username
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.actor }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ inputs.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: copy docker compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          port: 22
+          source: ${{ inputs.scp_files }}
+          target: compose_files/${{ steps.repo_name.outputs.lowercase }}
+          overwrite: true
+
+      - name: SSH connect to server and run docker image
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ inputs.host }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          script: |
+            # login to github registry
+            echo ${{ secrets.NITTIN_CI_TOKEN }} | docker login ${{ inputs.registry }} -u ${{ github.repository_owner }} --password-stdin
+
+            # pull latest image
+            docker pull ${{ steps.meta.outputs.tags }}
+
+            # create .env file
+            [ ! -d "envs/${{ steps.repo_name.outputs.lowercase }}" ] && mkdir -p envs/${{ steps.repo_name.outputs.lowercase }}
+            echo "${{ secrets.ENV_FILE }}" > envs/${{ steps.repo_name.outputs.lowercase }}/.env
+
+            cd /${{ inputs.compose_file_location }}
+
+            # run image
+            docker compose up -d
+
+            # remove old images
+            DOCKER_IDS=$(docker images | awk '/<none>/ { print $3 }')
+            if [ ! -z "$DOCKER_IDS" ]; then
+              echo "$DOCKER_IDS" | xargs docker rmi
+            fi
+            unset DOCKER_IDS
