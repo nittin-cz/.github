@@ -8,8 +8,8 @@ on:
         required: true
       scp_files:
         type: string
-        required: true
-      scp_files_target_location:
+        required: false
+      docker_compose_file_location:
         type: string
         required: true
       registry:
@@ -54,6 +54,7 @@ jobs:
           images: ${{ inputs.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: copy docker compose file to server
+        if: inputs.scp_files != ''
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ inputs.host }}
@@ -61,7 +62,7 @@ jobs:
           passphrase: ${{ secrets.passphrase }}
           port: 22
           source: ${{ inputs.scp_files }}
-          target: ${{ inputs.scp_files_target_location }}
+          target: ${{ inputs.docker_compose_file_location }}
           overwrite: true
 
       - name: SSH connect to server and run docker image
@@ -82,7 +83,7 @@ jobs:
             echo "${{ secrets.env_file }}" > ~/envs/${{ steps.repo_name.outputs.lowercase }}/.env
 
             # go to docker compose directory
-            cd ${{ inputs.scp_files_target_location }}/
+            cd ${{ inputs.docker_compose_file_location }}/
 
             # run image
             export IMAGE="${{ steps.meta.outputs.tags }}"
