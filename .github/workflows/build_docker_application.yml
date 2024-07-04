@@ -22,6 +22,9 @@ on:
     secrets:
       token:
         required: true
+    outputs:
+      repo_name:
+        value: ${{ jobs.Build_app.outputs.repo_name }}
 
 jobs:
   Update_app_version:
