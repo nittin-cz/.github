@@ -65,32 +65,3 @@ jobs:
           source: ${{ inputs.scp_files }}
           target: ${{ inputs.scp_files_target_location }}
           overwrite: true
-
-      - name: SSH connect to server and run docker image
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ inputs.host }}
-          key: ${{ secrets.key }}
-          passphrase: ${{ secrets.passphrase }}
-          script: |
-            # login to github registry
-            echo ${{ secrets.token }} | docker login ${{ inputs.registry }} -u ${{ github.repository_owner }} --password-stdin
-
-            # pull latest image
-            docker pull ${{ steps.meta.outputs.tags }}
-
-            # create .env file
-            [ ! -d "envs/${{ steps.repo_name.outputs.lowercase }}" ] && mkdir -p envs/${{ steps.repo_name.outputs.lowercase }}
-            echo "${{ secrets.env_file }}" > envs/${{ steps.repo_name.outputs.lowercase }}/.env
-
-            cd /${{ inputs.compose_file_location }}
-
-            # run image
-            docker compose up -d
-
-            # remove old images
-            DOCKER_IDS=$(docker images | awk '/<none>/ { print $3 }')
-            if [ ! -z "$DOCKER_IDS" ]; then
-              echo "$DOCKER_IDS" | xargs docker rmi
-            fi
-            unset DOCKER_IDS
