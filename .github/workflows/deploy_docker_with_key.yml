@@ -5,10 +5,13 @@ on:
     inputs:
       host:
         type: string
-        required: false
+        required: true
       scp_files:
         type: string
-        required: false
+        required: true
+      scp_files_target_location:
+        type: string
+        required: true
       registry:
         required: true
         type: string
