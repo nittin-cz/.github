@@ -62,7 +62,7 @@ jobs:
           passphrase: ${{ secrets.passphrase }}
           port: 22
           source: ${{ inputs.scp_files }}
-          target: ${{ inputs.docker_compose_file_location }}
+          target: ${{ secrets.docker_compose_file_location }}
           overwrite: true
 
       - name: SSH connect to server and run docker image
@@ -83,7 +83,7 @@ jobs:
             echo "${{ secrets.env_file }}" > ~/envs/${{ steps.repo_name.outputs.lowercase }}/.env
 
             # go to docker compose directory
-            cd ${{ inputs.docker_compose_file_location }}/
+            cd ${{ secrets.docker_compose_file_location }}/
 
             # run image
             export IMAGE="${{ inputs.image || steps.meta.outputs.tags }}"
