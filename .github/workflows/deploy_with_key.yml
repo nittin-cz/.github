@@ -60,6 +60,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ inputs.host }}
+          username: ${{ secrets.username }}
           key: ${{ secrets.key }}
           passphrase: ${{ secrets.passphrase }}
           port: 22
@@ -71,6 +72,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ inputs.host }}
+          username: ${{ secrets.username }}
           key: ${{ secrets.key }}
           passphrase: ${{ secrets.passphrase }}
           script: |
