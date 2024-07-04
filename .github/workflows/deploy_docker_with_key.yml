@@ -61,7 +61,7 @@ jobs:
           passphrase: ${{ secrets.password }}
           port: 22
           source: ${{ inputs.scp_files }}
-          target: compose_files/${{ steps.repo_name.outputs.lowercase }}
+          target: ${{ inputs.scp_files_target_location }}
           overwrite: true
 
       - name: SSH connect to server and run docker image
