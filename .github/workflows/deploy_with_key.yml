@@ -9,9 +9,6 @@ on:
       scp_files:
         type: string
         required: false
-      docker_compose_file_location:
-        type: string
-        required: true
       registry:
         required: true
         type: string
@@ -28,6 +25,8 @@ on:
       env_file:
         required: true
       username:
+        required: true
+      docker_compose_file_location:
         required: true
 
 env:

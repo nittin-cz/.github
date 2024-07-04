@@ -9,9 +9,6 @@ on:
       scp_files:
         type: string
         required: false
-      docker_compose_file_location:
-        type: string
-        required: true
       registry:
         required: true
         type: string
@@ -27,6 +24,8 @@ on:
         required: true
       username:
         required: true
+      docker_compose_file_location:
+          required: true
 
 env:
   IMAGE_NAME: ${{ github.repository }}
