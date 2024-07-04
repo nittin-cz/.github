@@ -23,7 +23,7 @@ on:
         required: true
       key:
         required: true
-      password:
+      passphrase:
         required: true
 
 env:
@@ -58,7 +58,7 @@ jobs:
         with:
           host: ${{ inputs.host }}
           key: ${{ secrets.key }}
-          passphrase: ${{ secrets.password }}
+          passphrase: ${{ secrets.passphrase }}
           port: 22
           source: ${{ inputs.scp_files }}
           target: ${{ inputs.scp_files_target_location }}
@@ -69,7 +69,7 @@ jobs:
         with:
           host: ${{ inputs.host }}
           key: ${{ secrets.key }}
-          passphrase: ${{ secrets.password }}
+          passphrase: ${{ secrets.passphrase }}
           script: |
             # login to github registry
             echo ${{ secrets.NITTIN_CI_TOKEN }} | docker login ${{ inputs.registry }} -u ${{ github.repository_owner }} --password-stdin
