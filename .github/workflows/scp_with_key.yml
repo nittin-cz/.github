@@ -25,16 +25,21 @@ on:
         required: true
       passphrase:
         required: true
-      env_file:
-        required: true
+    outputs:
+      repo_name:
+        value: ${{ jobs.Deploy.outputs.repo_name }}
+      tags:
+        value: ${{ jobs.Deploy.outputs.tags }}
 
 env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   Deploy:
     runs-on: ubuntu-latest
+    outputs: 
+      repo_name: ${{ steps.repo_name.outputs.lowercase }}
+      tags: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Code checkout
         uses: actions/checkout@v4

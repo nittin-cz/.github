@@ -81,10 +81,6 @@ jobs:
       #     tag: ${{ needs.Get_version.outputs.new_prod_version }}
       #     github_token: ${{ steps.app-token.outputs.token }}
 
-      - name: echo
-        run: |
-          echo "FUCK: ${{ github.base_ref}}"
-
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
