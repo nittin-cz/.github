@@ -15,6 +15,9 @@ on:
       registry:
         required: true
         type: string
+      image: 
+        required: false
+        type: string
     secrets:
       token:
         required: true
@@ -86,7 +89,7 @@ jobs:
             cd ${{ inputs.docker_compose_file_location }}/
 
             # run image
-            export IMAGE="${{ steps.meta.outputs.tags }}"
+            export IMAGE="${{ inputs.image || steps.meta.outputs.tags }}"
             export USERNAME="${{ secrets.username }}"
             export REPO_NAME="${{ steps.repo_name.outputs.lowercase }}"
             docker compose up -d
