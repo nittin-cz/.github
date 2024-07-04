@@ -58,8 +58,8 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ inputs.host }}
-          key: ${{ secrets.key }}
-          passphrase: ${{ secrets.passphrase }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
           port: 22
           source: ${{ inputs.scp_files }}
           target: ${{ secrets.docker_compose_file_location }}
@@ -69,8 +69,8 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ inputs.host }}
-          key: ${{ secrets.key }}
-          passphrase: ${{ secrets.passphrase }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
           script: |
             # login to github registry
             echo ${{ secrets.token }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
