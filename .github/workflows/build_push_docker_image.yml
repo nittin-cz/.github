@@ -15,6 +15,9 @@ on:
     secrets:
       token:
         required: true
+    outputs:
+      repo_name: 
+        value: ${{ jobs.Build.outputs.repo_name }}
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -22,6 +25,8 @@ env:
 jobs:
   Build:
     runs-on: ubuntu-latest
+    outputs:
+      repo_name: ${{ steps.repo_name.outputs.lowercase }}
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
@@ -40,6 +45,11 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ inputs.REGISTRY }}/${{ github.repository }}
+
+      - id: repo_name
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.event.repository.name }}
 
       - name: Build and push docker image with build arg
         if: inputs.with_args
