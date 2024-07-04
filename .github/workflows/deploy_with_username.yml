@@ -5,26 +5,30 @@ on:
     inputs:
       host:
         type: string
-        required: false
+        required: true
       scp_files:
         type: string
-        required: false
+        required: true
+      scp_files_target_location:
+        type: string
+        required: true
       registry:
         required: true
         type: string
-      compose_file_location:
-        required: true
-        type: string
+      skip_scp:
+        required: false
+        type: boolean
     secrets:
       token:
         required: true
-      username:
-        required: true
       password:
+        required: true
+      env_file:
+        required: true
+      username:
         required: true
 
 env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -51,36 +55,41 @@ jobs:
           images: ${{ inputs.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: copy docker compose file to server
+        if: !inputs.skip_scp
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ inputs.host }}
-          username: ${{ secrets.username }}
-          password: ${{ secrets.password }}
+          key: ${{ secrets.key }}
+          passphrase: ${{ secrets.passphrase }}
           port: 22
           source: ${{ inputs.scp_files }}
-          target: compose_files/${{ steps.repo_name.outputs.lowercase }}
+          target: ${{ inputs.scp_files_target_location }}
           overwrite: true
 
       - name: SSH connect to server and run docker image
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ inputs.host }}
-          username: ${{ secrets.username }}
-          password: ${{ secrets.password }}
+          key: ${{ secrets.key }}
+          passphrase: ${{ secrets.passphrase }}
           script: |
             # login to github registry
-            echo ${{ secrets.NITTIN_CI_TOKEN }} | docker login ${{ inputs.registry }} -u ${{ github.repository_owner }} --password-stdin
+            echo ${{ secrets.token }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
             # pull latest image
             docker pull ${{ steps.meta.outputs.tags }}
 
             # create .env file
-            [ ! -d "envs/${{ steps.repo_name.outputs.lowercase }}" ] && mkdir -p envs/${{ steps.repo_name.outputs.lowercase }}
-            echo "${{ secrets.ENV_FILE }}" > envs/${{ steps.repo_name.outputs.lowercase }}/.env
+            [ ! -d "~/envs/${{ steps.repo_name.outputs.lowercase }}" ] && mkdir -p ~/envs/${{ steps.repo_name.outputs.lowercase }}
+            echo "${{ secrets.env_file }}" > ~/envs/${{ steps.repo_name.outputs.lowercase }}/.env
 
-            cd /${{ inputs.compose_file_location }}
+            # go to docker compose directory
+            cd ${{ inputs.scp_files_target_location }}/
 
             # run image
+            export IMAGE="${{ steps.meta.outputs.tags }}"
+            export USERNAME="${{ secrets.username }}"
+            export REPO_NAME="${{ steps.repo_name.outputs.lowercase }}"
             docker compose up -d
 
             # remove old images
