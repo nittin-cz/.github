@@ -15,9 +15,6 @@ on:
       registry:
         required: true
         type: string
-      compose_file_location:
-        required: true
-        type: string
     secrets:
       token:
         required: true
@@ -29,11 +26,6 @@ on:
         required: true
       username:
         required: true
-    outputs:
-      repo_name:
-        value: ${{ jobs.Deploy.outputs.repo_name }}
-      tags:
-        value: ${{ jobs.Deploy.outputs.tags }}
 
 env:
   IMAGE_NAME: ${{ github.repository }}
@@ -41,9 +33,6 @@ env:
 jobs:
   Deploy:
     runs-on: ubuntu-latest
-    outputs: 
-      repo_name: ${{ steps.repo_name.outputs.lowercase }}
-      tags: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
@@ -93,7 +82,7 @@ jobs:
             echo "${{ secrets.env_file }}" > ~/envs/${{ steps.repo_name.outputs.lowercase }}/.env
 
             # go to docker compose directory
-            cd ${{ inputs.compose_file_location }}
+            cd ${{ inputs.scp_files_target_location }}/
 
             # run image
             export IMAGE="${{ steps.meta.outputs.tags }}"
