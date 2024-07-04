@@ -1,0 +1,19 @@
+name: ECHO
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        required: true
+        type: string
+
+jobs: 
+  Release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get next version
+        run: |
+          echo "received: ${{ inputs.registry }}" 
