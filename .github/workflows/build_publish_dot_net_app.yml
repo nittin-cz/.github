@@ -1,0 +1,50 @@
+name: Build docker application
+
+on:
+  workflow_call:
+    inputs:
+      dot_net_version_file_path:
+        required: true
+        type: string
+      dot_net_version:
+        required: true
+        type: string
+      csproj_path:
+        required: true
+        type: string
+      csproj:
+        required: true
+        type: string
+      package_name:
+        required: true
+        type: string
+    secrets:
+      ci_token:
+        required: true
+
+jobs:
+  Update_app_version:
+    uses: ./.github/workflows/release_new_version.yml
+    with:
+        dot_net_file_path: ${{ inputs.dot_net_version_file_path }}
+    secrets:
+        ci_token: ${{ secrets.token }}
+  Build_and_publish:
+    needs: Update_app_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8.x
+        uses: actions/setup-dotnet@v3
+        with:
+            dotnet-version: '${{ inputs.dot_net_version }}.x'
+
+      - name: Package the project
+        run: |
+            dotnet pack ${{ inputs.csproj_path }}/${{ inputs.csproj }}.csproj -p:PackageID=${{ inputs.package_name }} -p:Version=${{ needs.Update_app_version.outputs.new_version_number }} --configuration Release
+
+      - name: Publish the package
+        run: |
+            dotnet nuget push "${{ inputs.csproj_path }}/bin/Release/${{ inputs.package_name }}.${{ needs.Update_app_version.outputs.new_version_number }}.nupkg"  --api-key ${{ secrets.ci_token }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}"
