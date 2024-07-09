@@ -1,0 +1,41 @@
+name: Deploy application to server
+
+on:
+  workflow_call:
+    inputs:
+      csproj_path:
+        type: string
+        required: true
+      dot_net_version:
+        type: string
+        required: false
+
+jobs:
+  Install_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8.x
+        uses: actions/setup-dotnet@v3
+        with:
+            dotnet-version: "${{ inputs.dot_net_version }}.x"
+
+      - name: Cache .NET packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.nuget/packages
+            !~/.nuget/packages/lockfiles
+          key: ${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-dotnet-
+
+      - name: Install dependencies
+        run: |
+            dotnet restore ${{ inputs.csproj_path }} --locked-mode
+
+      - name: Build Solution
+        run: |
+          dotnet build ${{ inputs.csproj_path }} --no-restore
