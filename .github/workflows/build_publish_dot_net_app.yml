@@ -3,7 +3,7 @@ name: Build docker application
 on:
   workflow_call:
     inputs:
-      dot_net_version_file:
+      file_with_version:
         required: true
         type: string
       dot_net_version:
@@ -26,7 +26,7 @@ jobs:
   Update_app_version:
     uses: ./.github/workflows/release_new_version.yml
     with:
-        dot_net_file_path: ${{ inputs.dot_net_version_file }}
+        dot_net_file_path: ${{ inputs.file_with_version }}
     secrets:
         ci_token: ${{ secrets.token }}
   Build_and_publish:
