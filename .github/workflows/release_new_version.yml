@@ -89,6 +89,7 @@ jobs:
           committer_name: "github-actions[bot]"
           committer_email: "github-actions[bot]@users.noreply.github.com"
           tag: ${{ needs.Get_version.outputs.new_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
       - name: Create a GitHub release
