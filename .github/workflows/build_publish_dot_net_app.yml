@@ -18,9 +18,6 @@ on:
       package_name:
         required: true
         type: string
-      rulesets:
-        type: boolean
-        required: false
     secrets:
       ci_token:
         required: true
@@ -30,7 +27,6 @@ jobs:
     uses: ./.github/workflows/release_new_version.yml
     with:
         dot_net_file_path: ${{ inputs.file_with_version }}
-        rulesets: ${{ inputs.rulesets }}
     secrets:
         ci_token: ${{ secrets.ci_token }}
   Build_and_publish:
