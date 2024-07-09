@@ -43,7 +43,7 @@ jobs:
 
       - name: Package the project
         run: |
-            dotnet pack ${{ inputs.csproj_path }}/${{ inputs.build_file }}.csproj -p:PackageID=${{ inputs.package_name }} -p:Version=${{ needs.Update_app_version.outputs.new_version_number }} --configuration Release
+            dotnet pack ${{ inputs.csproj_path }}/${{ inputs.build_file }} -p:PackageID=${{ inputs.package_name }} -p:Version=${{ needs.Update_app_version.outputs.new_version_number }} --configuration Release
 
       - name: Publish the package
         run: |
