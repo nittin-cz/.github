@@ -17,7 +17,7 @@ jobs:
       - name: Code checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8.x
+      - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
         with:
             dotnet-version: "${{ inputs.dot_net_version }}.x"
