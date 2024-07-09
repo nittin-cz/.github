@@ -2,15 +2,19 @@ name: Reusable workflwo for updating production version
 
 on:
   workflow_call:
+    secrets:
+      ci_token:
+        required: true
 
-jobs: 
+jobs:
   Release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-            ref: ${{ github.base_ref }}
+          ref: ${{ github.base_ref }}
+          token: ${{ secrets.ci_token }}
 
       - name: Get next version
         uses: reecetech/version-increment@2024.4.3

@@ -9,6 +9,9 @@ on:
       dot_net_version:
         type: string
         required: true
+    secrets:
+      token:
+        required: true
 
 jobs:
   Install_and_test:
@@ -16,6 +19,8 @@ jobs:
     steps:
       - name: Code checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3

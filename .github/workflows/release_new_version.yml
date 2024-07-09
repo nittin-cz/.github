@@ -23,6 +23,8 @@ jobs:
     uses: ./.github/workflows/get_version_number.yml
     with:
       with_prefix: ${{ inputs.dot_net_file_path != '' }}
+    secrets:
+      token: ${{ secrets.ci_token }}
 
   Update_version_in_code:
     needs: Get_version
