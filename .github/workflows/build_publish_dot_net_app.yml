@@ -28,7 +28,7 @@ jobs:
     with:
         dot_net_file_path: ${{ inputs.file_with_version }}
     secrets:
-        ci_token: ${{ secrets.token }}
+        ci_token: ${{ secrets.ci_token }}
   Build_and_publish:
     needs: Update_app_version
     runs-on: ubuntu-latest
