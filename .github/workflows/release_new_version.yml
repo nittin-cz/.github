@@ -13,6 +13,10 @@ on:
     secrets:
       ci_token:
         required: true
+    outputs:
+      new_version_number:
+        description: "New version number"
+        value: ${{ jobs.Get_version.outputs.new_version }}
 
 jobs:
   Get_version:
