@@ -48,7 +48,7 @@ jobs:
           token: ${{ secrets.ci_token }}
           ref: ${{ github.base_ref }}
   
-      - name: Update fe package.json versions
+      - name: Update package.json versions
         if: inputs.package_json_paths != ''
         run: |
           IFS=',' read -ra ADDR <<< "${{ inputs.package_json_paths }}"
