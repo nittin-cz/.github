@@ -2,13 +2,12 @@ name: Extract the change type based on pull request
 
 on:
   workflow_call:
-    inputs:
-      with_prefix:
-        type: boolean
-        required: true
     outputs:
-      new_version:
+      new_v-version:
         description: "New version with v-prefix"
+        value: ${{ jobs.Get_new_version.outputs.new_v-version }}
+      new_version:
+        description: "New version without v-prefix"
         value: ${{ jobs.Get_new_version.outputs.new_version }}
     secrets:
         token:
@@ -46,6 +45,7 @@ jobs:
     if: ${{ needs.Extract_change_type.outputs.version_type != 'No Version Change' }}
     runs-on: ubuntu-latest
     outputs:
+      new_v-version: ${{ steps.get_version.outputs.new_v-version }}
       new_version: ${{ steps.get_version.outputs.new_version }}
     steps:
       - name: Checkout code
@@ -93,11 +93,8 @@ jobs:
       - name: Set output version
         id: get_version
         run: |
-          if [ "${{ inputs.with_prefix }}" = "true" ]; then
-            echo "::set-output name=new_version::${{ steps.version.outputs.version }}"
-          else
-            echo "::set-output name=new_version::${{ steps.version.outputs.v-version }}"
-          fi
+          echo "::set-output name=new_version::${{ steps.version.outputs.version }}"
+          echo "::set-output name=new_v-version::${{ steps.version.outputs.v-version }}"
   
 
       # - name: Bump version and push tag
