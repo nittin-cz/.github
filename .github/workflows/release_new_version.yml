@@ -1,4 +1,4 @@
-name: Reusable workflwo for updating production version
+name: Reusable workflow for updating production version
 
 on:
   workflow_dispatch:
@@ -20,6 +20,7 @@ on:
 
 jobs:
   Get_version:
+    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/get_version_number.yml
     secrets:
       token: ${{ secrets.ci_token }}
