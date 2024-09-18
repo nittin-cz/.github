@@ -22,7 +22,7 @@ jobs:
     with:
       branch: ${{ inputs.branch }}
     secrets:
-      token: ${{ secrets.ci_token }}
+      token: ${{ secrets.token }}
 
   Update_and_release:
     needs: Get_version
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ci_token }}
+          token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
       - name: Update package.json versions

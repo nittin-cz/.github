@@ -27,11 +27,6 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  Get_version:
-    uses: ./.github/workflows/get_version_number.yml
-    secrets:
-      token: ${{ secrets.token }}
-
   Update_version:
     uses: ./.github/workflows/update_and_release.yml
     with:
@@ -42,7 +37,7 @@ jobs:
       token: ${{ secrets.token }}
 
   Build_and_push:
-    needs: Get_version
+    needs: Update_version
     runs-on: ubuntu-latest
     steps:
       - name: Code checkout
