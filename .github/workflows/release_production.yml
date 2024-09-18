@@ -1,0 +1,58 @@
+name: Release new production version
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      package_json_paths:
+        type: string
+        required: false
+      dot_net_file_path:
+        type: string
+        required: false
+    secrets:
+      ci_token:
+        required: true
+
+jobs:
+  Get_version:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/get_version_number.yml
+    secrets:
+      token: ${{ secrets.ci_token }}
+
+  Update_and_release:
+    needs: Get_version
+    runs-on: ubuntu-latest
+    if: needs.Get_version.outputs.new_version != '' && needs.Get_version.outputs.new_v-version != ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ci_token }}
+          ref: ${{ github.base_ref }}
+
+      - name: Update package.json versions
+        if: inputs.package_json_paths != ''
+        run: |
+          IFS=',' read -ra ADDR <<< "${{ inputs.package_json_paths }}"
+          for folder in "${ADDR[@]}"; do
+            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
+          done
+
+      - name: Update .net file version
+        if: inputs.dot_net_file_path != ''
+        id: update
+        uses: vers-one/dotnet-project-version-updater@v1.6
+        with:
+          file: "${{ inputs.dot_net_file_path }}"
+          version: ${{ needs.Get_version.outputs.new_version }}
+
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ needs.Get_version.outputs.new_v-version }}"
+          makeLatest: ${{ github.base_ref == github.event.repository.default_branch }}
