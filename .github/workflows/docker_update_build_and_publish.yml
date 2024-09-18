@@ -46,6 +46,12 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
+        # Download the build artifact from the previous workflow
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: updated-app
+
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
@@ -53,28 +59,17 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.token }}
 
-          # Download the build artifact from the previous workflow
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          name: updated-app
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
 
-      - name: ls
+      - id: repo_name
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.event.repository.name }}
+
+      - name: Build and push docker image with build arg
         run: |
-          ls
-          cat fe/package.json
-
-    #   - name: Extract metadata (tags, labels) for Docker
-    #     id: meta
-    #     uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-    #     with:
-    #       images: ${{ env.REGISTRY }}/${{ github.repository }}
-
-    #   - id: repo_name
-    #     uses: ASzc/change-string-case-action@v5
-    #     with:
-    #       string: ${{ github.event.repository.name }}
-
-    #   - name: Build and push docker image with build arg
-    #     run: |
-    #       docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.flags }} ${{ inputs.dockerfile_path }}
+          docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.flags }} ${{ inputs.dockerfile_path }}

@@ -1,0 +1,72 @@
+name: Build and publish dotnet application
+
+on:
+  workflow_call:
+    inputs:
+      dot_net_version:
+        required: true
+        type: string
+      csproj_path:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      package_json_paths:
+        type: string
+        required: false
+      dot_net_file_path:
+        type: string
+        required: false
+      publish_folder:
+        type: string
+        required: true
+    secrets:
+      token:
+        required: true
+
+jobs:
+  Update_version:
+    uses: ./.github/workflows/update_and_release.yml
+    with:
+      branch: ${{ inputs.branch }}
+      dot_net_file_path: ${{ inputs.dot_net_file_path }}
+      package_json_paths: ${{ inputs.package_json_paths }}
+    secrets:
+      token: ${{ secrets.token }}
+
+  Build_and_publish:
+    needs: Update_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+          ref: ${{ inputs.branch }}
+
+      # Download the build artifact from the previous workflow
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: updated-app
+
+      - name: Setup .NET ${{ inputs.dot_net_version }}.x
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ inputs.dot_net_version }}.x"
+
+      # Run dotnet build and publish
+      - name: dotnet build and publish
+        run: |
+          dotnet restore
+          dotnet build --configuration Release -o ${{ inputs.publish_folder }}
+          dotnet publish ${{ inputs.csproj_path }} -c Release -o ${{ inputs.publish_folder }}
+
+        # Upload the published app as an artifact
+      - name: Upload build artifacts
+        if: github.base_ref == github.event.repository.default_branch
+        uses: actions/upload-artifact@v3
+        with:
+          name: published-app
+          path: ${{ inputs.publish_folder }}

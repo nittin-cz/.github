@@ -1,0 +1,45 @@
+name: Build and publish new nuget to github org registry
+
+on:
+  workflow_call:
+    inputs:
+      dot_net_version:
+        required: true
+        type: string
+      csproj_path:
+        required: true
+        type: string
+      build_file:
+        required: true
+        type: string
+      package_name:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+jobs:
+  Build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+
+      - name: Setup .NET ${{ inputs.dot_net_version }}.x
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ inputs.dot_net_version }}.x"
+
+      - name: Package the project
+        run: |
+          dotnet pack ${{ inputs.csproj_path }}/${{ inputs.build_file }} -p:PackageID=${{ inputs.package_name }} -p:Version=${{ inputs.version }} --configuration Release
+
+      - name: Publish the package
+        run: |
+          dotnet nuget push "${{ inputs.csproj_path }}/bin/Release/${{ inputs.package_name }}.${{ inputs.version }}.nupkg" --api-key ${{ secrets.token }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}"
