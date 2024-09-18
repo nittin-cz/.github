@@ -23,7 +23,6 @@ jobs:
   Update_and_release:
     needs: Get_version
     runs-on: ubuntu-latest
-    if: needs.Get_version.outputs.new_version != '' && needs.Get_version.outputs.new_v-version != ''
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -51,4 +50,3 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: "${{ needs.Get_version.outputs.new_v-version }}"
-          makeLatest: ${{ github.base_ref == github.event.repository.default_branch }}
