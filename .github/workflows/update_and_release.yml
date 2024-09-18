@@ -63,9 +63,16 @@ jobs:
         with:
           tag: "v${{ needs.Get_version.outputs.new_version }}"
 
-        # Upload the published app as an artifact
+      # Detect and upload only the updated files
+      - name: Get list of modified files
+        run: |
+          git fetch --tags
+          git diff --name-only $(git describe --tags --abbrev=0)..HEAD > modified_files.txt
+
       - name: Upload build artifacts
+        if: ${{ success() }}
         uses: actions/upload-artifact@v3
         with:
           name: updated-app
-          path: ~/*
+          path: |
+            $(cat modified_files.txt)
