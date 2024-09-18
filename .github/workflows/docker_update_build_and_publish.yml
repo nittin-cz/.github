@@ -58,17 +58,28 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.token }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+          # Download the build artifact from the previous workflow
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}
+          name: updated-app
 
-      - id: repo_name
-        uses: ASzc/change-string-case-action@v5
-        with:
-          string: ${{ github.event.repository.name }}
-
-      - name: Build and push docker image with build arg
+      - name: ls
         run: |
-          docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.flags }} ${{ inputs.dockerfile_path }}
+          ls
+          cat fe/package.json
+
+    #   - name: Extract metadata (tags, labels) for Docker
+    #     id: meta
+    #     uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+    #     with:
+    #       images: ${{ env.REGISTRY }}/${{ github.repository }}
+
+    #   - id: repo_name
+    #     uses: ASzc/change-string-case-action@v5
+    #     with:
+    #       string: ${{ github.event.repository.name }}
+
+    #   - name: Build and push docker image with build arg
+    #     run: |
+    #       docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.flags }} ${{ inputs.dockerfile_path }}
