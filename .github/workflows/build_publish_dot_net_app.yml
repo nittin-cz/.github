@@ -1,4 +1,4 @@
-name: Build docker application
+name: Build and publish dotnet application
 
 on:
   workflow_call:
