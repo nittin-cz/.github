@@ -14,8 +14,8 @@ on:
       token:
         required: true
 
-jobs:
-  get_version:
+jobs: 
+  Get_version:
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.get_version.outputs.new_version }}
@@ -37,7 +37,6 @@ jobs:
           echo "${CHANGE_TYPE:-Patch}" > change_type.txt
 
       - name: Read Change Type
-        id: read_change_type
         run: |
           CHANGE_TYPE=$(cat change_type.txt)
           echo "change_type=${CHANGE_TYPE}" >> $GITHUB_ENV

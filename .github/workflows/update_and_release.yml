@@ -43,7 +43,6 @@ jobs:
             jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
             echo $folder/package.json >> updated_files.txt
           done
-          echo "package.json" >> updated_files.txt
 
       - name: Update .NET file version
         if: inputs.dot_net_file_path != ''
@@ -70,13 +69,8 @@ jobs:
         with:
           tag: "v${{ needs.Get_version.outputs.new_version }}"
 
-      - name: Prepare updated files for upload
-        run: |
-          UPDATED_PATHS=$(cat updated_files.txt)
-          echo "updated_files=${UPDATED_PATHS}" >> $GITHUB_ENV
-
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
           name: updated-app
-          path: ${{ env.UPDATED_PATHS }}
+          path: "*"
