@@ -1,4 +1,4 @@
-name: Extract the change type based on pull request
+name: Extract the change type and get new version based on pull request
 
 on:
   workflow_call:
@@ -9,15 +9,16 @@ on:
     outputs:
       new_version:
         description: "New version without v-prefix"
-        value: ${{ jobs.Get_new_version.outputs.new_version }}
+        value: ${{ jobs.get_version.outputs.new_version }}
     secrets:
       token:
         required: true
+
 jobs:
-  Extract_change_type:
+  get_version:
     runs-on: ubuntu-latest
     outputs:
-      version_type: ${{ env.change_type }}
+      new_version: ${{ steps.get_version.outputs.new_version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,34 +31,10 @@ jobs:
         run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
 
       - name: Extract Change Type
-        id: extracted_change_type
+        id: extract_change_type
         run: |
           CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
           echo "${CHANGE_TYPE:-Patch}" > change_type.txt
-
-      - name: Upload Change Type Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: change_type
-          path: change_type.txt
-
-  Get_new_version:
-    needs: Extract_change_type
-    if: ${{ needs.Extract_change_type.outputs.version_type != 'No Version Change' }}
-    runs-on: ubuntu-latest
-    outputs:
-      new_version: ${{ steps.get_version.outputs.new_version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.branch }}
-
-      - name: Download Change Type Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: change_type
-          path: .
 
       - name: Read Change Type
         id: read_change_type
