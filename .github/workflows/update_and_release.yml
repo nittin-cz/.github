@@ -1,0 +1,71 @@
+name: Release new production version
+
+on:
+  workflow_call:
+    inputs:
+      package_json_paths:
+        type: string
+        required: false
+      dot_net_file_path:
+        type: string
+        required: false
+      branch:
+        type: string
+        required: true
+    secrets:
+      token:
+        required: true
+
+jobs:
+  Get_version:
+    uses: ./.github/workflows/get_version.yml
+    with:
+      branch: ${{ inputs.branch }}
+    secrets:
+      token: ${{ secrets.ci_token }}
+
+  Update_and_release:
+    needs: Get_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ci_token }}
+          ref: ${{ inputs.branch }}
+
+      - name: Update package.json versions
+        if: inputs.package_json_paths != ''
+        run: |
+          IFS=',' read -ra ADDR <<< "${{ inputs.package_json_paths }}"
+          for folder in "${ADDR[@]}"; do
+            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
+          done
+
+      - name: Update .net file version
+        if: inputs.dot_net_file_path != ''
+        id: update
+        uses: vers-one/dotnet-project-version-updater@v1.6
+        with:
+          file: "${{ inputs.dot_net_file_path }}"
+          version: ${{ needs.Get_version.outputs.new_version }}
+
+      - name: Create new tag
+        if: inputs.branch != 'main' || inputs.branch != 'master'
+        uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
+        with:
+          tag: "v${{ needs.Get_version.outputs.new_version }}"
+
+      - name: Create a GitHub release
+        if: inputs.branch == 'main' || inputs.branch == 'master'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ needs.Get_version.outputs.new_version }}"
+
+        # Upload the published app as an artifact
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: updated-app
+          path: ${{ inputs.dot_net_file_path || inputs.package_json_paths }}

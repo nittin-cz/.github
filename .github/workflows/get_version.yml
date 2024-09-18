@@ -1,0 +1,96 @@
+name: Extract the change type based on pull request
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
+    outputs:
+      new_version:
+        description: "New version without v-prefix"
+        value: ${{ jobs.Get_new_version.outputs.new_version }}
+    secrets:
+      token:
+        required: true
+jobs:
+  Extract_change_type:
+    runs-on: ubuntu-latest
+    outputs:
+      version_type: ${{ env.change_type }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          token: ${{ secrets.token }}
+
+      - name: Extract Pull Request body
+        id: extract_pr_body
+        run: echo "${{ github.event.pull_request.body }}" > pr_body.txt
+
+      - name: Extract Change Type
+        id: extracted_change_type
+        run: |
+          CHANGE_TYPE=$(grep -Eo '\[x\] (Major|Minor|Patch|No Version Change)' pr_body.txt | sed -E 's/\[x\] //')
+          echo "${CHANGE_TYPE:-Patch}" > change_type.txt
+
+      - name: Upload Change Type Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: change_type
+          path: change_type.txt
+
+  Get_new_version:
+    needs: Extract_change_type
+    if: ${{ needs.Extract_change_type.outputs.version_type != 'No Version Change' }}
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.get_version.outputs.new_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Download Change Type Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: change_type
+          path: .
+
+      - name: Read Change Type
+        id: read_change_type
+        run: |
+          CHANGE_TYPE=$(cat change_type.txt)
+          echo "change_type=${CHANGE_TYPE}" >> $GITHUB_ENV
+
+      - name: Determine Increment Type
+        id: determine_increment
+        run: |
+          case "${{ env.change_type }}" in
+            Major)
+              echo "increment=major" >> $GITHUB_ENV
+              ;;
+            Minor)
+              echo "increment=minor" >> $GITHUB_ENV
+              ;;
+            Patch)
+              echo "increment=patch" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "increment=patch" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Get next version
+        uses: reecetech/version-increment@2024.4.3
+        id: version
+        with:
+          scheme: semver
+          increment: ${{ env.increment }}
+
+      - name: Set output version
+        id: get_version
+        run: |
+          echo "::set-output name=new_version::${{ steps.version.outputs.version }}"

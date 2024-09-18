@@ -1,0 +1,74 @@
+name: Update version, build and push docker image to org registry
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      package_json_paths:
+        type: string
+        required: false
+      dot_net_file_path:
+        type: string
+        required: false
+      dockerfile_path:
+        required: true
+        type: string
+      flags:
+        required: false
+        type: string
+      branch:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  Get_version:
+    uses: ./.github/workflows/get_version_number.yml
+    secrets:
+      token: ${{ secrets.token }}
+
+  Update_version:
+    uses: ./.github/workflows/update_and_release.yml
+    with:
+      branch: ${{ inputs.branch }}
+      dot_net_file_path: ${{ inputs.dot_net_file_path }}
+      package_json_paths: ${{ inputs.package_json_paths }}
+    secrets:
+      token: ${{ secrets.token }}
+
+  Build_and_push:
+    needs: Get_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+          ref: ${{ inputs.branch }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.token }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+
+      - id: repo_name
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.event.repository.name }}
+
+      - name: Build and push docker image with build arg
+        run: |
+          docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.flags }} ${{ inputs.dockerfile_path }}
