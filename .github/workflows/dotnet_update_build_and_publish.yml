@@ -28,6 +28,9 @@ on:
       token:
         required: true
 
+env:
+  SRC:
+
 jobs:
   Update_version:
     uses: ./.github/workflows/update_and_release.yml
@@ -49,11 +52,17 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
-      # Download the build artifact from the previous workflow
+      - name: Get repository name without organization
+        if: inputs.dot_net_file_path
+        run: |
+          SRC=$(echo "${{ inputs.dot_net_file_path }}" | cut -d'/' -f2)
+          echo "SRC=$SRC" >> $GITHUB_ENV
+
+        # Download the build artifact from the previous workflow
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ needs.Update_version.outputs.repo_name }}-v${{ needs.Update_version.outputs.new_version }}-updated"
+          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
@@ -72,5 +81,5 @@ jobs:
         if: github.base_ref == github.event.repository.default_branch
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ needs.Update_version.outputs.repo_name }}-v${{ needs.Update_version.outputs.new_version }}-published"
+          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-published"
           path: ${{ inputs.publish_folder }}

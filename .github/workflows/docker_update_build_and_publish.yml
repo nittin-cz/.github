@@ -25,6 +25,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  SRC:
 
 jobs:
   Update_version:
@@ -46,11 +47,17 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
+      - name: Get repository name without organization
+        if: inputs.dot_net_file_path
+        run: |
+          SRC=$(echo "${{ inputs.dot_net_file_path }}" | cut -d'/' -f2)
+          echo "SRC=$SRC" >> $GITHUB_ENV
+
         # Download the build artifact from the previous workflow
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ needs.Update_version.outputs.repo_name }}-v${{ needs.Update_version.outputs.new_version }}-updated"
+          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1

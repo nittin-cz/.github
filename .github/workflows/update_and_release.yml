@@ -24,7 +24,6 @@ on:
         value: ${{ jobs.Get_version.outputs.new_version }}
 
 env:
-  REPO_NAME:
   SRC:
 
 jobs:
@@ -46,9 +45,8 @@ jobs:
           ref: ${{ inputs.branch }}
 
       - name: Get repository name without organization
+        if: inputs.dot_net_file_path
         run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
           SRC=$(echo "${{ inputs.dot_net_file_path }}" | cut -d'/' -f2)
           echo "SRC=$SRC" >> $GITHUB_ENV
 
@@ -84,5 +82,5 @@ jobs:
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ env.SRC }}-${{ env.REPO_NAME }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
           path: "*"

@@ -28,6 +28,9 @@ on:
       token:
         required: true
 
+env:
+  SRC:
+
 jobs:
   Update_app_version:
     uses: ./.github/workflows/update_and_release.yml
@@ -48,11 +51,17 @@ jobs:
           token: ${{ secrets.ci_token }}
           ref: ${{ inputs.branch }}
 
-          # Download the build artifact from the previous workflow
+      - name: Get repository name without organization
+        if: inputs.file_with_version
+        run: |
+          SRC=$(echo "${{ inputs.file_with_version }}" | cut -d'/' -f2)
+          echo "SRC=$SRC" >> $GITHUB_ENV
+
+        # Download the build artifact from the previous workflow
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ needs.Update_app_version.outputs.repo_name }}-v${{ needs.Update_app_version.outputs.new_version }}-updated"
+          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
