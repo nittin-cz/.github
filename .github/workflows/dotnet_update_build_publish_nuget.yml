@@ -1,0 +1,64 @@
+name: Build and publish dotnet application
+
+on:
+  workflow_call:
+    inputs:
+      file_with_version:
+        required: true
+        type: string
+      dot_net_version:
+        required: true
+        type: string
+      csproj_path:
+        required: true
+        type: string
+      build_file:
+        required: true
+        type: string
+      package_name:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+jobs:
+  Update_app_version:
+    uses: ./.github/workflows/update_and_release.yml
+    with:
+      dot_net_file_path: ${{ inputs.file_with_version }}
+      branch: ${{ inputs.branch }}
+    secrets:
+      token: ${{ secrets.token }}
+
+  Build_and_publish:
+    needs: Update_app_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ci_token }}
+          ref: ${{ inputs.branch }}
+
+          # Download the build artifact from the previous workflow
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: updated-app
+
+      - name: Setup .NET ${{ inputs.dot_net_version }}.x
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ inputs.dot_net_version }}.x"
+
+      - name: Package the project
+        run: |
+          dotnet pack ${{ inputs.csproj_path }}/${{ inputs.build_file }} -p:PackageID=${{ inputs.package_name }} -p:Version=${{ needs.Update_app_version.outputs.new_version }} --configuration Release
+
+      - name: Publish the package
+        run: |
+          dotnet nuget push "${{ inputs.csproj_path }}/bin/Release/${{ inputs.package_name }}.${{ needs.Update_app_version.outputs.new_version }}.nupkg"  --api-key ${{ secrets.token }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}"

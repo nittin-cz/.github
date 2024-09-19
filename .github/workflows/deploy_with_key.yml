@@ -12,7 +12,7 @@ on:
       registry:
         required: true
         type: string
-      image: 
+      image:
         required: false
         type: string
     secrets:
@@ -31,6 +31,7 @@ on:
 
 env:
   IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
 
 jobs:
   Deploy:
@@ -79,7 +80,7 @@ jobs:
           passphrase: ${{ secrets.passphrase }}
           script: |
             # login to github registry
-            echo ${{ secrets.token }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            echo ${{ secrets.token }} | docker login ${{ env.REGISTRY }} -u ${{ github.repository_owner }} --password-stdin
 
             # pull latest image
             docker pull ${{ steps.meta.outputs.tags }}
@@ -95,6 +96,7 @@ jobs:
             export IMAGE="${{ inputs.image || steps.meta.outputs.tags }}"
             export USERNAME="${{ secrets.username }}"
             export REPO_NAME="${{ steps.repo_name.outputs.lowercase }}"
+            
             docker compose up -d
 
             # remove old images

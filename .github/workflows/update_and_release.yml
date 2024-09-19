@@ -15,10 +15,13 @@ on:
     secrets:
       token:
         required: true
+    outputs:
+      new_version:
+        description: "New version"
+        value: ${{ jobs.Get_version.outputs.new_version }}
 
 jobs:
   Get_version:
-    if: (inputs.branch != 'main' || inputs.branch != 'master') || (inputs.branch == 'main' || inputs.branch == 'master') && github.event.pull_request.merged == true
     uses: ./.github/workflows/get_version.yml
     with:
       branch: ${{ inputs.branch }}
