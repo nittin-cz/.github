@@ -23,9 +23,6 @@ on:
         description: "New version"
         value: ${{ jobs.Get_version.outputs.new_version }}
 
-env:
-  REPO_NAME:
-
 jobs:
   Get_version:
     uses: ./.github/workflows/get_version.yml
@@ -81,5 +78,5 @@ jobs:
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: "v${{ env.REPO_NAME }}-${{ hashFiles('**/*.csproj', '**/package.json', '**/**/package.json' ) }}-updated"
+          name: "${{ env.REPO_NAME }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj', '**/package.json', '**/**/package.json' ) }}-updated"
           path: "*"
