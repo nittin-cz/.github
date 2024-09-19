@@ -48,7 +48,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: updated-app
+          name: "${{ needs.Update_app_version.outputs.repo_name }}-v${{ needs.Update_app_version.outputs.new_version }}-updated"
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
