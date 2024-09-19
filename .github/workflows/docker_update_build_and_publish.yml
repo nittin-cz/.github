@@ -50,7 +50,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: updated-app
+          name: "${{ needs.Update_version.outputs.repo_name }}-v${{ needs.Update_version.outputs.new_version }}-updated"
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
