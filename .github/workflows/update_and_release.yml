@@ -22,8 +22,9 @@ on:
       new_version:
         description: "New version"
         value: ${{ jobs.Get_version.outputs.new_version }}
-      repo_name:
-        value: ${{ jobs.Update_and_release.outputs.repo_name }}
+
+env:
+  REPO_NAME:
 
 jobs:
   Get_version:
@@ -43,7 +44,10 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
-      - run: ls
+      - name: Get repository name without organization
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          echo "Repository name: $REPO_NAME"
 
       - name: Update package.json versions
         if: inputs.package_json_paths != ''
@@ -77,5 +81,5 @@ jobs:
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ github.repository }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj', '**/package.json', '**/**/package.json' ) }}-updated"
+          name: "v${{ env.REPO_NAME }}-${{ hashFiles('**/*.csproj', '**/package.json', '**/**/package.json' ) }}-updated"
           path: "*"
