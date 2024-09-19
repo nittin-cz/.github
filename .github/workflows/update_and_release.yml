@@ -19,6 +19,8 @@ on:
       new_version:
         description: "New version"
         value: ${{ jobs.Get_version.outputs.new_version }}
+      repo_name:
+        value: ${{ jobs.Update_and_release.outputs.repo_name }}
 
 jobs:
   Get_version:
@@ -31,12 +33,19 @@ jobs:
   Update_and_release:
     needs: Get_version
     runs-on: ubuntu-latest
+    outputs:
+      repo_name: ${{ steps.repo_name.outputs.lowercase }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
+
+      - id: repo_name
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.repository }}
 
       - name: Update package.json versions
         if: inputs.package_json_paths != ''
@@ -45,7 +54,6 @@ jobs:
           for folder in "${ADDR[@]}"; do
             echo "Updating package.json in $folder"
             jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
-            echo $folder/package.json >> updated_files.txt
           done
 
       - name: Update .NET file version
@@ -54,11 +62,6 @@ jobs:
         with:
           file: "${{ inputs.dot_net_file_path }}"
           version: ${{ needs.Get_version.outputs.new_version }}
-
-      - name: save changes of fpdated .NET file version
-        if: inputs.dot_net_file_path != ''
-        run: |
-          echo "${{ inputs.dot_net_file_path }}" >> updated_files.txt
 
       - name: Create new tag
         if: inputs.branch != 'main' && inputs.branch != 'master'
@@ -76,5 +79,5 @@ jobs:
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: updated-app
+          name: "${{ steps.repo_name.outputs.lowercase }}-v${{ needs.Get_version.outputs.new_version }}-updated"
           path: "*"
