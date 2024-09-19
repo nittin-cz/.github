@@ -82,4 +82,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: "${{ env.REPO_NAME }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
-          path: "*"
+          path: |
+            ${{ inputs.dot_net_file_path || '*' }}
