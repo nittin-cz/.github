@@ -1,4 +1,4 @@
-name: Build and publish dotnet application
+name: Build and publish dotnet nuget to org registry
 
 on:
   workflow_call:
