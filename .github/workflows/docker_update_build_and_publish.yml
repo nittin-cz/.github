@@ -19,6 +19,9 @@ on:
       branch:
         required: true
         type: string
+      artifact_name:
+        required: false
+        type: string
     secrets:
       token:
         required: true
@@ -34,6 +37,7 @@ jobs:
       branch: ${{ inputs.branch }}
       dot_net_file_path: ${{ inputs.dot_net_file_path }}
       package_json_paths: ${{ inputs.package_json_paths }}
+      artifact_name: ${{ inputs.artifact_name }}
     secrets:
       token: ${{ secrets.token }}
 
@@ -57,7 +61,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1

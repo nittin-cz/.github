@@ -24,12 +24,12 @@ on:
       skip_release:
         type: boolean
         required: false
+      artifact_name:
+        type: string
+        required: false
     secrets:
       token:
         required: true
-
-env:
-  SRC:
 
 jobs:
   Update_version:
@@ -39,6 +39,7 @@ jobs:
       dot_net_file_path: ${{ inputs.dot_net_file_path }}
       package_json_paths: ${{ inputs.package_json_paths }}
       skip_release: ${{ inputs.skip_release }}
+      artifact_name: ${{ inputs.artifact_name }}
     secrets:
       token: ${{ secrets.token }}
 
@@ -52,17 +53,11 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
-      - name: Get repository name without organization
-        if: inputs.csproj_path
-        run: |
-          SRC=$(echo "${{ inputs.csproj_path }}" | cut -d'/' -f2)
-          echo "SRC=$SRC" >> $GITHUB_ENV
-
         # Download the build artifact from the previous workflow
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
@@ -81,5 +76,5 @@ jobs:
         if: github.base_ref == github.event.repository.default_branch
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-published"
+          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-published"
           path: ${{ inputs.publish_folder }}

@@ -28,9 +28,6 @@ on:
       token:
         required: true
 
-env:
-  SRC:
-
 jobs:
   Update_app_version:
     uses: ./.github/workflows/update_and_release.yml
@@ -38,6 +35,7 @@ jobs:
       dot_net_file_path: ${{ inputs.file_with_version }}
       branch: ${{ inputs.branch }}
       skip_release: ${{ inputs.skip_release }}
+      artifact_name: ${{ inputs.build_file }}
     secrets:
       token: ${{ secrets.token }}
 
@@ -48,20 +46,14 @@ jobs:
       - name: Code checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ci_token }}
+          token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
-
-      - name: Get repository name without organization
-        if: inputs.csproj_path
-        run: |
-          SRC=$(echo "${{ inputs.csproj_path }}" | cut -d'/' -f2)
-          echo "SRC=$SRC" >> $GITHUB_ENV
 
         # Download the build artifact from the previous workflow
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ env.SRC }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          name: "${{ inputs.build_file }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
