@@ -25,6 +25,7 @@ on:
 
 env:
   REPO_NAME:
+  SRC:
 
 jobs:
   Get_version:
@@ -48,6 +49,8 @@ jobs:
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          SRC=$(echo "${{ inputs.dot_net_file_path }}" | cut -d'/' -f2)
+          echo "SRC=$SRC" >> $GITHUB_ENV
 
       - name: Update package.json versions
         if: inputs.package_json_paths != ''
@@ -81,6 +84,5 @@ jobs:
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ env.REPO_NAME }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
-          path: |
-            ${{ inputs.dot_net_file_path || '*' }}
+          name: "${{ env.SRC }}-${{ env.REPO_NAME }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          path: "*"
