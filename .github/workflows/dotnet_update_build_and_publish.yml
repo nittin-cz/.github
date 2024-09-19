@@ -21,6 +21,9 @@ on:
       publish_folder:
         type: string
         required: true
+      skip_release:
+        type: boolean
+        required: false
     secrets:
       token:
         required: true
@@ -32,6 +35,7 @@ jobs:
       branch: ${{ inputs.branch }}
       dot_net_file_path: ${{ inputs.dot_net_file_path }}
       package_json_paths: ${{ inputs.package_json_paths }}
+      skip_release: ${{ inputs.skip_release }}
     secrets:
       token: ${{ secrets.token }}
 

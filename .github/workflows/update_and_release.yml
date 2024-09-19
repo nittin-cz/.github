@@ -12,6 +12,9 @@ on:
       branch:
         type: string
         required: true
+      skip_release:
+        type: boolean
+        required: false
     secrets:
       token:
         required: true
@@ -71,7 +74,7 @@ jobs:
           force_push_tag: true
 
       - name: Create a GitHub release
-        if: inputs.branch == 'main' || inputs.branch == 'master'
+        if: (inputs.branch == 'main' || inputs.branch == 'master') && !inputs.skip_release
         uses: ncipollo/release-action@v1
         with:
           tag: "v${{ needs.Get_version.outputs.new_version }}"
