@@ -21,6 +21,9 @@ on:
       branch:
         required: true
         type: string
+      skip_release:
+        type: boolean
+        required: false
     secrets:
       token:
         required: true
@@ -31,6 +34,7 @@ jobs:
     with:
       dot_net_file_path: ${{ inputs.file_with_version }}
       branch: ${{ inputs.branch }}
+      skip_release: ${{ inputs.skip_release }}
     secrets:
       token: ${{ secrets.token }}
 
