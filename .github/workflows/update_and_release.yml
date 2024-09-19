@@ -1,4 +1,4 @@
-name: Release new production version
+name: Create new artifact with updated version
 
 on:
   workflow_call:
@@ -36,8 +36,6 @@ jobs:
   Update_and_release:
     needs: Get_version
     runs-on: ubuntu-latest
-    outputs:
-      repo_name: ${{ steps.repo_name.outputs.lowercase }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,10 +43,7 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
-      - id: repo_name
-        uses: ASzc/change-string-case-action@v5
-        with:
-          string: ${{ github.repository }}
+      - run: ls
 
       - name: Update package.json versions
         if: inputs.package_json_paths != ''
@@ -82,5 +77,5 @@ jobs:
       - name: Upload only updated artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ steps.repo_name.outputs.lowercase }}-v${{ needs.Get_version.outputs.new_version }}-updated"
+          name: "${{ github.repository }}-v${{ needs.Get_version.outputs.new_version }}-${{ hashFiles('**/*.csproj') }}-updated"
           path: "*"
