@@ -53,9 +53,9 @@ jobs:
           ref: ${{ inputs.branch }}
 
       - name: Get repository name without organization
-        if: inputs.dot_net_file_path
+        if: inputs.csproj_path
         run: |
-          SRC=$(echo "${{ inputs.dot_net_file_path }}" | cut -d'/' -f2)
+          SRC=$(echo "${{ inputs.csproj_path }}" | cut -d'/' -f2)
           echo "SRC=$SRC" >> $GITHUB_ENV
 
         # Download the build artifact from the previous workflow
