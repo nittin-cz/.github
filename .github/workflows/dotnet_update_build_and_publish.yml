@@ -91,7 +91,6 @@ jobs:
 
         # Upload the published app as an artifact
       - name: Upload build artifacts
-        if: github.base_ref == github.event.repository.default_branch
         uses: actions/upload-artifact@v3
         with:
           name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/package-lock.json' ) }}-published"
