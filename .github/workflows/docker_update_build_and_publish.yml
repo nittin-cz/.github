@@ -7,7 +7,7 @@ on:
       package_json_paths:
         type: string
         required: false
-      dot_net_file_path:
+      dotnet_version_file_path:
         type: string
         required: false
       dockerfile_path:
@@ -28,14 +28,13 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  SRC:
 
 jobs:
   Update_version:
     uses: ./.github/workflows/update_and_release.yml
     with:
       branch: ${{ inputs.branch }}
-      dot_net_file_path: ${{ inputs.dot_net_file_path }}
+      dotnet_version_file_path: ${{ inputs.dotnet_version_file_path }}
       package_json_paths: ${{ inputs.package_json_paths }}
       artifact_name: ${{ inputs.artifact_name }}
     secrets:
@@ -50,12 +49,6 @@ jobs:
         with:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
-
-      - name: Get repository name without organization
-        if: inputs.dot_net_file_path
-        run: |
-          SRC=$(echo "${{ inputs.dot_net_file_path }}" | cut -d'/' -f2)
-          echo "SRC=$SRC" >> $GITHUB_ENV
 
         # Download the build artifact from the previous workflow
       - name: Download build artifact

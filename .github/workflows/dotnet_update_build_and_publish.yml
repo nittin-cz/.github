@@ -15,7 +15,7 @@ on:
       package_json_paths:
         type: string
         required: false
-      dot_net_file_path:
+      dotnet_version_file_path:
         type: string
         required: false
       publish_folder:
@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/update_and_release.yml
     with:
       branch: ${{ inputs.branch }}
-      dot_net_file_path: ${{ inputs.dot_net_file_path }}
+      dotnet_version_file_path: ${{ inputs.dotnet_version_file_path }}
       package_json_paths: ${{ inputs.package_json_paths }}
       skip_release: ${{ inputs.skip_release }}
       artifact_name: ${{ inputs.artifact_name }}
@@ -57,7 +57,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/package-lock.json' ) }}-updated"
 
       - name: Setup .NET ${{ inputs.dot_net_version }}.x
         uses: actions/setup-dotnet@v3
@@ -76,5 +76,5 @@ jobs:
         if: github.base_ref == github.event.repository.default_branch
         uses: actions/upload-artifact@v3
         with:
-          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-published"
+          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/package-lock.json' ) }}-published"
           path: ${{ inputs.publish_folder }}
