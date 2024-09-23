@@ -30,18 +30,15 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  Update_version:
-    uses: ./.github/workflows/update_and_release.yml
+  Get_version:
+    uses: ./.github/workflows/get_version.yml
     with:
       branch: ${{ inputs.branch }}
-      dotnet_version_file_path: ${{ inputs.dotnet_version_file_path }}
-      package_json_paths: ${{ inputs.package_json_paths }}
-      artifact_name: ${{ inputs.artifact_name }}
     secrets:
       token: ${{ secrets.token }}
 
   Build_and_push:
-    needs: Update_version
+    needs: Get_version
     runs-on: ubuntu-latest
     steps:
       - name: Code checkout
@@ -50,11 +47,34 @@ jobs:
           token: ${{ secrets.token }}
           ref: ${{ inputs.branch }}
 
-        # Download the build artifact from the previous workflow
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
+      - name: Update package.json versions
+        if: inputs.package_json_paths != ''
+        run: |
+          IFS=',' read -ra ADDR <<< "${{ inputs.package_json_paths }}"
+          for folder in "${ADDR[@]}"; do
+            echo "Updating package.json in $folder"
+            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
+          done
+
+      - name: Update .NET file version
+        if: inputs.dotnet_version_file_path
+        uses: vers-one/dotnet-project-version-updater@v1.6
         with:
-          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/**/package-lock.json' ) }}-updated"
+          file: "${{ inputs.dotnet_version_file_path }}"
+          version: ${{ needs.Get_version.outputs.new_version }}
+
+      - name: Create new tag
+        if: inputs.branch != 'main' && inputs.branch != 'master'
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "v${{ needs.Get_version.outputs.new_version }}"
+          force_push_tag: true
+
+      - name: Create a GitHub release
+        if: (inputs.branch == 'main' || inputs.branch == 'master') && !inputs.skip_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ needs.Get_version.outputs.new_version }}"
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
