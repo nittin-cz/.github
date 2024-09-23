@@ -91,6 +91,6 @@ jobs:
         with:
           string: ${{ github.event.repository.name }}
 
-      - name: Build and push docker image with build arg
+      - name: Build and push docker image
         run: |
           docker buildx build --push -t ${{ steps.meta.outputs.tags }} --cache-to type=inline --cache-from type=registry,ref=${{ steps.meta.outputs.tags }} ${{ inputs.flags }} ${{ inputs.dockerfile_path }}
