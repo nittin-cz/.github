@@ -19,9 +19,6 @@ on:
       branch:
         required: true
         type: string
-      artifact_name:
-        required: false
-        type: string
     secrets:
       token:
         required: true
