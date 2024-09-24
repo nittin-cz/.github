@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       file_with_version:
-        required: true
+        required: false
         type: string
       dot_net_version:
         required: true
