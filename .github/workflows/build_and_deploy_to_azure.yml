@@ -1,0 +1,118 @@
+name: Build and publish dotnet application
+
+on:
+  workflow_call:
+    inputs:
+      dot_net_version:
+        required: true
+        type: string
+      csproj_path:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      package_json_paths:
+        type: string
+        required: false
+      dotnet_version_file_path:
+        type: string
+        required: false
+      publish_folder:
+        type: string
+        required: true
+      skip_release:
+        type: boolean
+        required: false
+      project_name:
+        type: string
+        required: true
+      azure_web_app_name:
+        type: string
+        required: true
+    secrets:
+      token:
+        required: true
+      azure_client_id:
+        required: true
+      azure_tenant_id:
+        required: true
+      azure_subscription_id:
+        required: true
+
+jobs:
+  Get_version:
+    uses: ./.github/workflows/get_version.yml
+    with:
+      branch: ${{ inputs.branch }}
+    secrets:
+      token: ${{ secrets.token }}
+
+  Build_and_publish:
+    needs: Get_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+          ref: ${{ inputs.branch }}
+
+      - name: Update package.json versions
+        if: inputs.package_json_paths != ''
+        run: |
+          IFS=',' read -ra ADDR <<< "${{ inputs.package_json_paths }}"
+          for folder in "${ADDR[@]}"; do
+            echo "Updating package.json in $folder"
+            jq ".version=\"${{ needs.Get_version.outputs.new_version }}\"" $folder/package.json > $folder/temp.json && mv $folder/temp.json $folder/package.json
+          done
+
+      - name: Update .NET file version
+        uses: vers-one/dotnet-project-version-updater@v1.6
+        with:
+          file: "${{ inputs.dotnet_version_file_path || 'Directory.Build.props' }}"
+          version: ${{ needs.Get_version.outputs.new_version }}
+
+      - name: Setup .NET ${{ inputs.dot_net_version }}.x
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "${{ inputs.dot_net_version }}.x"
+
+      # Run dotnet build and publish
+      - name: dotnet build and publish
+        run: |
+          dotnet restore
+          dotnet build --configuration Release -o ${{ inputs.publish_folder }}
+          dotnet publish ${{ inputs.csproj_path }} -c Release -o ${{ inputs.publish_folder }}
+
+      - name: Create new tag
+        if: inputs.branch != 'main' && inputs.branch != 'master'
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: "v${{ needs.Get_version.outputs.new_version }}"
+          force_push_tag: true
+
+      - name: Create a GitHub release
+        if: (inputs.branch == 'main' || inputs.branch == 'master') && !inputs.skip_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: "v${{ needs.Get_version.outputs.new_version }}"
+
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.azure_client_id }}
+          tenant-id: ${{ secrets.azure_tenant_id }}
+          subscription-id: ${{ secrets.azure_subscription_id }}
+
+      # Deploy to Azure Web apps
+      - name: "Run Azure webapp deploy action using publish profile credentials"
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ inputs.azure_web_app_name }}
+          package: "${{ inputs.project_name }}"
+          clean: true
+          # startup-command: "dotnet Nittin.Lms.Web.dll"
+
+      - name: Logout from Azure
+        run: az logout
