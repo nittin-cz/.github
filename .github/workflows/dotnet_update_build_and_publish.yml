@@ -90,8 +90,8 @@ jobs:
           tag: "v${{ needs.Get_version.outputs.new_version }}"
 
         # Upload the published app as an artifact
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/package-lock.json' ) }}-published"
-          path: ${{ inputs.publish_folder }}
+      # - name: Upload build artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: "${{ inputs.artifact_name }}-${{ hashFiles('**/*.csproj', '**/*.lock', '**/package-lock.json' ) }}-published"
+      #     path: ${{ inputs.publish_folder }}

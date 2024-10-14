@@ -10,8 +10,9 @@ on:
         description: "New version without v-prefix"
         value: ${{ jobs.Get_new_version.outputs.new_version }}
     secrets:
-        token:
-          required: true
+      token:
+        required: true
+
 jobs:
   Extract_change_type:
     if: github.event.pull_request.merged == true
@@ -40,6 +41,7 @@ jobs:
         with:
           name: change_type
           path: change_type.txt
+          retention-days: 1
 
   Get_new_version:
     needs: Extract_change_type
@@ -96,7 +98,6 @@ jobs:
         run: |
           echo "::set-output name=new_version::${{ steps.version.outputs.version }}"
           echo "::set-output name=new_v-version::${{ steps.version.outputs.v-version }}"
-  
 
       # - name: Bump version and push tag
       #   id: tag_version
